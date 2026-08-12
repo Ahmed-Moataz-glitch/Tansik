@@ -7,7 +7,7 @@ final class HomeInitial extends HomeState {}
 final class HomeLoading extends HomeState {}
 
 final class HomeLoaded extends HomeState {
-  final HtmlTableData data;
+  final LimitsModel data;
   HomeLoaded(this.data);
 }
 

@@ -6,6 +6,7 @@ import 'package:mostaqbaly/core/utils/app_routes.dart';
 import 'package:mostaqbaly/features/home/presentation/view/pages/home_page.dart';
 import 'package:mostaqbaly/features/home/presentation/view/pages/limits_page.dart';
 import 'package:mostaqbaly/features/home/presentation/view/pages/result_page.dart';
+import 'package:mostaqbaly/features/home/presentation/view_model/home_cubit.dart';
 
 void main() {
   runApp(const MyApp());
@@ -81,7 +82,19 @@ class MyApp extends StatelessWidget {
                 );
               case AppRoutes.result:
                 return MaterialPageRoute(
-                  builder: (context) => const ResultPage(),
+                  builder: (context) {
+                    final args = settings.arguments as Map<String, dynamic>;
+                    final homeCubit = args['homeCubit'] as HomeCubit;
+                    final studentGrade = args['studentGrade'] as double;
+                    final initialStreamIndex = args['initialStreamIndex'] as int? ?? 0;
+                    final subStream = args['subStream'] as String? ?? 'all';
+                    return ResultPage(
+                      homeCubit: homeCubit,
+                      studentGrade: studentGrade,
+                      initialStreamIndex: initialStreamIndex,
+                      subStream: subStream,
+                    );
+                  },
                 );
               default:
                 return MaterialPageRoute(
