@@ -1,58 +1,59 @@
 import 'package:flutter_scrapper/mobile_scraper.dart';
 import 'package:mostaqbaly/core/utils/app_constants.dart';
 import 'package:mostaqbaly/features/home/data/api/api_result.dart';
-import 'package:mostaqbaly/features/home/data/models/home_model.dart';
+import 'package:mostaqbaly/features/home/data/models/limits_model.dart';
+import 'package:mostaqbaly/features/home/data/models/recommendation_model.dart';
 
 class HomeApi {
-  Future<ApiResult<HtmlTableData>> fetchElmyNew2025Limits() async {
-    return _fetchTableLimits(AppConstants.elmyNew2025Endpoint);
+  Future<ApiResult<LimitsModel>> fetchElmyNew2025Limits() async {
+    return _fetchTableLimits(true, AppConstants.elmyNew2025Endpoint);
   }
 
-  Future<ApiResult<HtmlTableData>> fetchElmyOld2025Limits() async {
-    return _fetchTableLimits(AppConstants.elmyOld2025Endpoint);
+  Future<ApiResult<LimitsModel>> fetchElmyOld2025Limits() async {
+    return _fetchTableLimits(false, AppConstants.elmyOld2025Endpoint);
   }
 
-  Future<ApiResult<HtmlTableData>> fetchAdabyNew2025Limits() async {
-    return _fetchTableLimits(AppConstants.adabyNew2025Endpoint);
+  Future<ApiResult<LimitsModel>> fetchAdabyNew2025Limits() async {
+    return _fetchTableLimits(false, AppConstants.adabyNew2025Endpoint);
   }
 
-  Future<ApiResult<HtmlTableData>> fetchAdabyOld2025Limits() async {
-    return _fetchTableLimits(AppConstants.adabyOld2025Endpoint);
+  Future<ApiResult<LimitsModel>> fetchAdabyOld2025Limits() async {
+    return _fetchTableLimits(false, AppConstants.adabyOld2025Endpoint);
   }
 
-  Future<ApiResult<HtmlTableData>> fetchElmy2024Limits() async {
-    return _fetchTableLimits(AppConstants.elmy2024Endpoint);
+  Future<ApiResult<LimitsModel>> fetchElmy2024Limits() async {
+    return _fetchTableLimits(false, AppConstants.elmy2024Endpoint);
   }
 
-  Future<ApiResult<HtmlTableData>> fetchAdaby2024Limits() async {
-    return _fetchTableLimits(AppConstants.adaby2024Endpoint);
+  Future<ApiResult<LimitsModel>> fetchAdaby2024Limits() async {
+    return _fetchTableLimits(false, AppConstants.adaby2024Endpoint);
   }
 
-  Future<ApiResult<HtmlTableData>> fetchElmy2023Limits() async {
-    return _fetchTableLimits(AppConstants.elmy2023Endpoint);
+  Future<ApiResult<LimitsModel>> fetchElmy2023Limits() async {
+    return _fetchTableLimits(false, AppConstants.elmy2023Endpoint);
   }
 
-  Future<ApiResult<HtmlTableData>> fetchAdaby2023Limits() async {
-    return _fetchTableLimits(AppConstants.adaby2023Endpoint);
+  Future<ApiResult<LimitsModel>> fetchAdaby2023Limits() async {
+    return _fetchTableLimits(false, AppConstants.adaby2023Endpoint);
   }
 
-  Future<ApiResult<HtmlTableData>> fetchElmy2022Limits() async {
-    return _fetchTableLimits(AppConstants.elmy2022Endpoint);
+  Future<ApiResult<LimitsModel>> fetchElmy2022Limits() async {
+    return _fetchTableLimits(false, AppConstants.elmy2022Endpoint);
   }
 
-  Future<ApiResult<HtmlTableData>> fetchAdaby2022Limits() async {
-    return _fetchTableLimits(AppConstants.adaby2022Endpoint);
+  Future<ApiResult<LimitsModel>> fetchAdaby2022Limits() async {
+    return _fetchTableLimits(false, AppConstants.adaby2022Endpoint);
   }
 
-  Future<ApiResult<HtmlTableData>> _fetchTableLimits(String endpoint) async {
+  Future<ApiResult<LimitsModel>> _fetchTableLimits(bool isElmyNew2025Limits, String endpoint) async {
     final url = Uri.https(AppConstants.baseUrl, endpoint).toString();
     final scraper = MobileScraper(url: url);
     try {
       final success = await scraper.load();
       if (success && scraper.rawHtml != null) {
-        final rows = _parseTableRows(scraper.rawHtml!, tableId: 'table14');
+        final rows = _parseTableRows(isElmyNew2025Limits, scraper.rawHtml!, tableId: 'table14');
         if (rows.isNotEmpty) {
-          return ApiSuccess(HtmlTableData(rows: rows));
+          return ApiSuccess(LimitsModel(rows: rows));
         } else {
           return ApiError('No data found');
         }
@@ -66,7 +67,7 @@ class HomeApi {
     }
   }
 
-  List<List<String>> _parseTableRows(String html, {String tableId = 'table14'}) {
+  List<List<String>> _parseTableRows(bool isElmyNew2025Limits, String html, {String tableId = 'table14'}) {
     final tableMatch = RegExp(
       '<table[^>]*id=["\']$tableId["\'][^>]*>(.*?)<\\/table>',
       caseSensitive: false,
@@ -95,7 +96,12 @@ class HomeApi {
         return _cleanCellText(cellHtml);
       }).toList();
 
-      if (cells.isNotEmpty) {
+      if (cells.length >= 2) {
+        if (isElmyNew2025Limits) {
+          recommendation.add(RecommendationModel(name: cells[0], grade: cells[1]));
+        }
+        rows.add(cells);
+      } else if (cells.isNotEmpty) {
         rows.add(cells);
       }
     }

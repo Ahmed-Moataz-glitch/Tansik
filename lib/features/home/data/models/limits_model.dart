@@ -1,4 +1,4 @@
-class HtmlTableData {
+class LimitsModel {
   final List<String> headers = 
   [
     'الكلية',
@@ -6,7 +6,7 @@ class HtmlTableData {
   ];
   final List<List<String>> rows;
 
-  HtmlTableData({required this.rows});
+  LimitsModel({required this.rows});
 }
 
 

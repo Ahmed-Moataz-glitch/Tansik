@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mostaqbaly/features/home/data/api/api_result.dart';
-import 'package:mostaqbaly/features/home/data/models/home_model.dart';
+import 'package:mostaqbaly/features/home/data/models/limits_model.dart';
 import 'package:mostaqbaly/features/home/domain/repo/repo/home_repo.dart';
 
 part 'home_state.dart';
