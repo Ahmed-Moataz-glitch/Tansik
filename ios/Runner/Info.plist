@@ -47,5 +47,9 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>نحتاج إلى موقعك الجغرافي لعرض الكليات والجامعات الأقرب إليك.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>نحتاج إلى موقعك الجغرافي لعرض الكليات والجامعات الأقرب إليك.</string>
 	</dict>
 </plist>
