@@ -106,7 +106,7 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              SizedBox(height: size.height * 0.04),
+              SizedBox(height: size.height * 0.02),
               Align(
                 alignment: Alignment.center,
                 child: Image.asset(
@@ -116,7 +116,7 @@ class _HomePageState extends State<HomePage> {
                   fit: BoxFit.contain,
                 ),
               ),
-              SizedBox(height: 16.h),
+              SizedBox(height: 36.h),
               Text(
                 'الشعبة التعليمية',
                 style: Theme.of(
@@ -310,7 +310,7 @@ class _HomePageState extends State<HomePage> {
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: limits.length,
                 separatorBuilder: (context, index) {
-                  return SizedBox(height: 12.h);
+                  return SizedBox(height: 16.h);
                 },
                 itemBuilder: (context, index) {
                   return InkWell(
@@ -338,6 +338,7 @@ class _HomePageState extends State<HomePage> {
                   );
                 },
               ),
+              SizedBox(height: 16.h),
             ],
           ),
         ),

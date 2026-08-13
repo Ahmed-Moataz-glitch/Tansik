@@ -1,3 +1,6 @@
+import 'package:mostaqbaly/features/home/data/models/college_location_model.dart';
+import 'package:mostaqbaly/features/home/data/models/tansik_zone.dart';
+
 enum RecommendationCategory {
   guaranteed, // مضمونة (diff >= 0)
   likely,     // محتملة (-1.0 <= diff < 0)
@@ -11,6 +14,9 @@ class CollegeRecommendation {
   final double effectiveStudentGrade;
   final double diff; // effectiveStudentGrade - requiredGrade
   final RecommendationCategory category;
+  final CollegeLocationModel? location;
+  final double? distanceInKm;
+  final TansikZone? tansikZone;
 
   CollegeRecommendation({
     required this.name,
@@ -18,8 +24,35 @@ class CollegeRecommendation {
     required this.effectiveStudentGrade,
     required this.diff,
     required this.category,
+    this.location,
+    this.distanceInKm,
+    this.tansikZone,
   });
+
+  CollegeRecommendation copyWith({
+    String? name,
+    double? requiredGrade,
+    double? effectiveStudentGrade,
+    double? diff,
+    RecommendationCategory? category,
+    CollegeLocationModel? location,
+    double? distanceInKm,
+    TansikZone? tansikZone,
+  }) {
+    return CollegeRecommendation(
+      name: name ?? this.name,
+      requiredGrade: requiredGrade ?? this.requiredGrade,
+      effectiveStudentGrade: effectiveStudentGrade ?? this.effectiveStudentGrade,
+      diff: diff ?? this.diff,
+      category: category ?? this.category,
+      location: location ?? this.location,
+      distanceInKm: distanceInKm ?? this.distanceInKm,
+      tansikZone: tansikZone ?? this.tansikZone,
+    );
+  }
 }
+
+
 
 class RecommendationModel {
   final String name;
