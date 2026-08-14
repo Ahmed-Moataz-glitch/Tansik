@@ -25,7 +25,7 @@ class ResultPage extends StatefulWidget {
     super.key,
     required this.homeCubit,
     required this.studentGrade,
-    this.initialStreamIndex = 0,
+    this.initialStreamIndex = 4,
     this.subStream = 'all',
     this.initialGovernorate,
     this.initialAdministration,
@@ -83,7 +83,7 @@ class _ResultPageState extends State<ResultPage> {
       _sortByDiffAscending = true;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchStreamLimits(_selectedStreamIndex);
+      _fetchStreamLimits(_selectedStreamIndex + 4);
     });
   }
 
@@ -95,18 +95,6 @@ class _ResultPageState extends State<ResultPage> {
 
   void _fetchStreamLimits(int index) {
     switch (limits[index]) {
-      case 'المجموعة العلمية نظام حديث 2026':
-        widget.homeCubit.fetchElmyNew2026Limits();
-        break;
-      case 'المجموعة العلمية نظام قديم 2026':
-        widget.homeCubit.fetchElmyOld2026Limits();
-        break;
-      case 'المجموعة الأدبية نظام حديث 2026':
-        widget.homeCubit.fetchAdabyNew2026Limits();
-        break;
-      case 'المجموعة الأدبية نظام قديم 2026':
-        widget.homeCubit.fetchAdabyOld2026Limits();
-        break;
       case 'المجموعة العلمية نظام حديث 2025':
         widget.homeCubit.fetchElmyNew2025Limits();
         break;
@@ -529,11 +517,11 @@ class _ResultPageState extends State<ResultPage> {
                       color: primaryColor,
                       size: 20.sp,
                     ),
-                    items: List.generate(limits.length, (index) {
+                    items: List.generate(limits.length - 4, (index) {
                       return DropdownMenuItem<int>(
                         value: index,
                         child: Text(
-                          limits[index],
+                          limits[index + 4],
                           style: TextStyle(
                             fontSize: 12.sp,
                             fontWeight: FontWeight.bold,
