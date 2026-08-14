@@ -2,6 +2,14 @@ import 'package:mostaqbaly/features/home/data/api/api_result.dart';
 import 'package:mostaqbaly/features/home/data/models/limits_model.dart';
 
 abstract class HomeRepo {
+  Future<ApiResult<LimitsModel>> fetchElmyNew2026Limits();
+
+  Future<ApiResult<LimitsModel>> fetchElmyOld2026Limits();
+
+  Future<ApiResult<LimitsModel>> fetchAdabyNew2026Limits();
+
+  Future<ApiResult<LimitsModel>> fetchAdabyOld2026Limits();
+
   Future<ApiResult<LimitsModel>> fetchElmyNew2025Limits();
 
   Future<ApiResult<LimitsModel>> fetchElmyOld2025Limits();

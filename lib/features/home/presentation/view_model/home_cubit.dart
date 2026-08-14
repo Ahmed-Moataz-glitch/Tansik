@@ -9,6 +9,50 @@ class HomeCubit extends Cubit<HomeState> {
   final HomeRepo homeRepo;
   HomeCubit(this.homeRepo) : super(HomeInitial());
 
+  Future<void> fetchElmyNew2026Limits() async {
+    emit(HomeLoading());
+    final result = await homeRepo.fetchElmyNew2026Limits();
+    switch (result) {
+      case ApiSuccess():
+        emit(HomeLoaded(result.data!));
+      case ApiError():
+        emit(HomeError(result.message));
+    }
+  }
+
+  Future<void> fetchElmyOld2026Limits() async {
+    emit(HomeLoading());
+    final result = await homeRepo.fetchElmyOld2026Limits();
+    switch (result) {
+      case ApiSuccess():
+        emit(HomeLoaded(result.data!));
+      case ApiError():
+        emit(HomeError(result.message));
+    }
+  }
+
+  Future<void> fetchAdabyNew2026Limits() async {
+    emit(HomeLoading());
+    final result = await homeRepo.fetchAdabyNew2026Limits();
+    switch (result) {
+      case ApiSuccess():
+        emit(HomeLoaded(result.data!));
+      case ApiError():
+        emit(HomeError(result.message));
+    }
+  }
+
+  Future<void> fetchAdabyOld2026Limits() async {
+    emit(HomeLoading());
+    final result = await homeRepo.fetchAdabyOld2026Limits();
+    switch (result) {
+      case ApiSuccess():
+        emit(HomeLoaded(result.data!));
+      case ApiError():
+        emit(HomeError(result.message));
+    }
+  }
+
   Future<void> fetchElmyNew2025Limits() async {
     emit(HomeLoading());
     final result = await homeRepo.fetchElmyNew2025Limits();

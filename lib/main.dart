@@ -88,11 +88,15 @@ class MyApp extends StatelessWidget {
                     final studentGrade = args['studentGrade'] as double;
                     final initialStreamIndex = args['initialStreamIndex'] as int? ?? 0;
                     final subStream = args['subStream'] as String? ?? 'all';
+                    final selectedGovernorate = args['selectedGovernorate'] as dynamic;
+                    final selectedAdministration = args['selectedAdministration'] as String?;
                     return ResultPage(
                       homeCubit: homeCubit,
                       studentGrade: studentGrade,
                       initialStreamIndex: initialStreamIndex,
                       subStream: subStream,
+                      initialGovernorate: selectedGovernorate,
+                      initialAdministration: selectedAdministration,
                     );
                   },
                 );

@@ -17,16 +17,37 @@ class LimitsPage extends StatefulWidget {
 }
 
 class _LimitsPageState extends State<LimitsPage> {
+  late final ScrollController _scrollController;
+
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchLimits();
     });
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   void _fetchLimits() {
     switch (limits[widget.index]) {
+      case 'المجموعة العلمية نظام حديث 2026':
+        widget.homeCubit.fetchElmyNew2026Limits();
+        break;
+      case 'المجموعة العلمية نظام قديم 2026':
+        widget.homeCubit.fetchElmyOld2026Limits();
+        break;
+      case 'المجموعة الأدبية نظام حديث 2026':
+        widget.homeCubit.fetchAdabyNew2026Limits();
+        break;
+      case 'المجموعة الأدبية نظام قديم 2026':
+        widget.homeCubit.fetchAdabyOld2026Limits();
+        break;
       case 'المجموعة العلمية نظام حديث 2025':
         widget.homeCubit.fetchElmyNew2025Limits();
         break;
@@ -64,7 +85,7 @@ class _LimitsPageState extends State<LimitsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(limits[widget.index]),
+        title: Text(limits[widget.index], style: TextStyle(fontSize: 19.sp)),
         centerTitle: true,
       ),
       body: BlocConsumer<HomeCubit, HomeState>(
@@ -140,11 +161,7 @@ class _LimitsPageState extends State<LimitsPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.inbox_rounded,
-                      size: 64.sp,
-                      color: Colors.grey,
-                    ),
+                    Icon(Icons.inbox_rounded, size: 64.sp, color: Colors.grey),
                     SizedBox(height: 16.h),
                     Text(
                       'لا توجد بيانات متاحة حالياً',
@@ -166,92 +183,150 @@ class _LimitsPageState extends State<LimitsPage> {
 
             final headerCount = state.data.headers.length;
 
-            return Directionality(
-              textDirection: TextDirection.rtl,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minWidth: constraints.maxWidth,
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(16.r),
-                        child: DataTable(
-                          dataRowMaxHeight: 60.h,
-                          headingRowColor: WidgetStatePropertyAll(
-                            FlexScheme.aquaBlue.data.light.primary.withAlpha(
-                              80,
-                            ),
+            return Stack(
+              children: [
+                Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        controller: _scrollController,
+                        scrollDirection: Axis.vertical,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minWidth: constraints.maxWidth,
                           ),
-                          headingRowHeight: 80.h,
-                          border: TableBorder.all(
-                            color: Colors.grey.shade500,
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                          columns: state.data.headers
-                              .map(
-                                (header) => DataColumn(
-                                  label: Expanded(
-                                    child: Text(
-                                      header,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 18.sp,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  headingRowAlignment:
-                                      MainAxisAlignment.center,
-                                ),
-                              )
-                              .toList(),
-                          rows: state.data.rows.map(
-                            (row) {
-                              final cellsToUse = row.length >= headerCount
-                                  ? row.sublist(0, headerCount)
-                                  : [
-                                      ...row,
-                                      ...List.filled(
-                                        headerCount - row.length,
-                                        '',
-                                      )
-                                    ];
-                    
-                              return DataRow(
-                                color: WidgetStatePropertyAll(
-                                  FlexScheme.mandyRed.data.light.primary
-                                      .withAlpha(20),
-                                ),
-                                cells: cellsToUse
-                                    .map(
-                                      (cell) => DataCell(
-                                        Text(
-                                          cell,
+                          child: Padding(
+                            padding: EdgeInsets.all(16.r),
+                            child: DataTable(
+                              dataRowMaxHeight: 60.h,
+                              headingRowColor: WidgetStatePropertyAll(
+                                FlexScheme.aquaBlue.data.light.primary
+                                    .withAlpha(80),
+                              ),
+                              headingRowHeight: 80.h,
+                              border: TableBorder.all(
+                                color: Colors.grey.shade500,
+                                borderRadius: BorderRadius.circular(8.r),
+                              ),
+                              columns: state.data.headers
+                                  .map(
+                                    (header) => DataColumn(
+                                      label: Expanded(
+                                        child: Text(
+                                          header,
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
-                                            fontSize: 15.sp,
+                                            fontSize: 18.sp,
                                             fontWeight: FontWeight.bold,
                                           ),
                                           textAlign: TextAlign.center,
                                         ),
                                       ),
-                                    )
-                                    .toList(),
-                              );
-                            },
-                          ).toList(),
+                                      headingRowAlignment:
+                                          MainAxisAlignment.center,
+                                    ),
+                                  )
+                                  .toList(),
+                              rows: state.data.rows.map((row) {
+                                final cellsToUse = row.length >= headerCount
+                                    ? row.sublist(0, headerCount)
+                                    : [
+                                        ...row,
+                                        ...List.filled(
+                                          headerCount - row.length,
+                                          '',
+                                        ),
+                                      ];
+
+                                return DataRow(
+                                  color: WidgetStatePropertyAll(
+                                    FlexScheme.mandyRed.data.light.primary
+                                        .withAlpha(20),
+                                  ),
+                                  cells: cellsToUse
+                                      .map(
+                                        (cell) => DataCell(
+                                          Text(
+                                            cell,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: 15.sp,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Positioned(
+                  left: 16.w,
+                  bottom: 50.h,
+                  child: Column(
+                    spacing: 36.h,
+                    children: [
+                      SizedBox(
+                        width: 48.w,
+                        height: 48.w,
+                        child: FloatingActionButton(
+                          onPressed: () {
+                            _scrollController.animateTo(
+                              _scrollController.position.minScrollExtent,
+                              duration: const Duration(milliseconds: 500),
+                              curve: Curves.easeInOut,
+                            );
+                          },
+                          mini: true,
+                          shape: const CircleBorder(),
+                          backgroundColor: FlexScheme
+                              .mandyRed
+                              .data
+                              .light
+                              .secondaryLightRef!
+                              .withAlpha(200),
+                          child: Icon(Icons.arrow_upward_rounded, size: 24.sp),
                         ),
                       ),
-                    ),
-                  );
-                },
-              ),
+                      SizedBox(
+                        width: 48.w,
+                        height: 48.w,
+                        child: FloatingActionButton(
+                          onPressed: () {
+                            _scrollController.animateTo(
+                              _scrollController.position.maxScrollExtent,
+                              duration: const Duration(milliseconds: 500),
+                              curve: Curves.easeInOut,
+                            );
+                          },
+                          mini: true,
+                          shape: const CircleBorder(),
+                          backgroundColor: FlexScheme
+                              .mandyRed
+                              .data
+                              .light
+                              .secondaryLightRef!
+                              .withAlpha(200),
+                          child: Icon(
+                            Icons.arrow_downward_rounded,
+                            size: 24.sp,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             );
           }
 

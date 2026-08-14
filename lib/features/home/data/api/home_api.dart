@@ -5,6 +5,38 @@ import 'package:mostaqbaly/features/home/data/models/limits_model.dart';
 import 'package:mostaqbaly/features/home/data/models/recommendation_model.dart';
 
 class HomeApi {
+  Future<ApiResult<LimitsModel>> fetchElmyNew2026Limits() async {
+    final res = await _fetchTableLimits(false, AppConstants.elmyNew2026Endpoint);
+    if (res is ApiError) {
+      return fetchElmyNew2025Limits();
+    }
+    return res;
+  }
+
+  Future<ApiResult<LimitsModel>> fetchElmyOld2026Limits() async {
+    final res = await _fetchTableLimits(false, AppConstants.elmyOld2026Endpoint);
+    if (res is ApiError) {
+      return fetchElmyOld2025Limits();
+    }
+    return res;
+  }
+
+  Future<ApiResult<LimitsModel>> fetchAdabyNew2026Limits() async {
+    final res = await _fetchTableLimits(false, AppConstants.adabyNew2026Endpoint);
+    if (res is ApiError) {
+      return fetchAdabyNew2025Limits();
+    }
+    return res;
+  }
+
+  Future<ApiResult<LimitsModel>> fetchAdabyOld2026Limits() async {
+    final res = await _fetchTableLimits(false, AppConstants.adabyOld2026Endpoint);
+    if (res is ApiError) {
+      return fetchAdabyOld2025Limits();
+    }
+    return res;
+  }
+
   Future<ApiResult<LimitsModel>> fetchElmyNew2025Limits() async {
     return _fetchTableLimits(true, AppConstants.elmyNew2025Endpoint);
   }
