@@ -11,6 +11,8 @@ import 'package:mostaqbaly/features/home/domain/repo/data_source/home_data_sourc
 import 'package:mostaqbaly/features/home/domain/repo/repo/home_repo.dart';
 import 'package:mostaqbaly/features/home/presentation/view/wigdets/text_form_field_widget.dart';
 import 'package:mostaqbaly/features/home/presentation/view/wigdets/validator.dart';
+import 'package:mostaqbaly/features/home/data/models/college_location_model.dart';
+import 'package:mostaqbaly/features/home/presentation/view/wigdets/administration_picker_modal.dart';
 import 'package:mostaqbaly/core/utils/app_toast.dart';
 import 'package:mostaqbaly/features/home/presentation/view_model/home_cubit.dart';
 import 'package:toastification/toastification.dart';
@@ -28,6 +30,8 @@ class _HomePageState extends State<HomePage> {
 
   String selectedTrack = 'elmy_eloum'; // 'elmy_eloum', 'elmy_riyada', 'adaby'
   bool isNewSystem = true;
+  CollegeLocationModel? selectedGovernorate;
+  String? selectedAdministration;
 
   int get computedStreamIndex => (selectedTrack == 'adaby' ? 2 : 0) + (isNewSystem ? 0 : 1);
 
@@ -243,14 +247,79 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-              SizedBox(height: 20.h),
+              SizedBox(height: 18.h),
+              Text(
+                'المحافظة والإدارة التعليمية',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall!.copyWith(fontSize: 16.sp),
+              ),
+              SizedBox(height: 10.h),
+              InkWell(
+                onTap: () {
+                  AdministrationPickerModal.show(
+                    context: context,
+                    currentGovernorateName: selectedGovernorate?.name,
+                    currentAdministrationName: selectedAdministration,
+                    onSelect: (gov, admin) {
+                      setState(() {
+                        selectedGovernorate = gov;
+                        selectedAdministration = admin;
+                      });
+                    },
+                  );
+                },
+                borderRadius: BorderRadius.circular(12.r),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                  decoration: BoxDecoration(
+                    color: selectedGovernorate != null
+                        ? primaryColor.withValues(alpha: 0.06)
+                        : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                      color: selectedGovernorate != null ? primaryColor : Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.location_city_rounded,
+                        color: selectedGovernorate != null ? primaryColor : Colors.grey.shade600,
+                        size: 22.sp,
+                      ),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: Text(
+                          selectedGovernorate == null
+                              ? 'اختر المحافظة والإدارة التعليمية'
+                              : (selectedAdministration != null
+                                  ? '$selectedAdministration - ${selectedGovernorate!.name}'
+                                  : 'محافظة ${selectedGovernorate!.name}'),
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontWeight: selectedGovernorate != null ? FontWeight.bold : FontWeight.w500,
+                            color: selectedGovernorate != null ? primaryColor : Colors.grey.shade700,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: selectedGovernorate != null ? primaryColor : Colors.grey.shade600,
+                        size: 22.sp,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 18.h),
               Text(
                 'المجموع',
                 style: Theme.of(
                   context,
                 ).textTheme.bodySmall!.copyWith(fontSize: 16.sp),
               ),
-              SizedBox(height: 12.h),
+              SizedBox(height: 10.h),
               TextFormFieldWidget(
                 controller: gradeController,
                 validator: Validator.validateCode,
@@ -277,6 +346,8 @@ class _HomePageState extends State<HomePage> {
                           'studentGrade': grade,
                           'initialStreamIndex': computedStreamIndex,
                           'subStream': selectedTrack,
+                          'selectedGovernorate': selectedGovernorate,
+                          'selectedAdministration': selectedAdministration,
                         });
                       },
                       style: ElevatedButton.styleFrom(

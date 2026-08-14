@@ -10,7 +10,7 @@ import 'package:mostaqbaly/features/home/data/models/limits_model.dart';
 import 'package:mostaqbaly/features/home/data/models/recommendation_model.dart';
 import 'package:mostaqbaly/features/home/presentation/view_model/home_cubit.dart';
 import 'package:toastification/toastification.dart';
-
+import 'package:mostaqbaly/features/home/data/models/college_location_model.dart';
 import 'package:mostaqbaly/features/home/data/models/tansik_zone.dart';
 
 class ResultPage extends StatefulWidget {
@@ -18,12 +18,17 @@ class ResultPage extends StatefulWidget {
   final double studentGrade;
   final int initialStreamIndex;
   final String subStream; // 'elmy_eloum', 'elmy_riyada', 'adaby', 'all'
+  final CollegeLocationModel? initialGovernorate;
+  final String? initialAdministration;
+
   const ResultPage({
     super.key,
     required this.homeCubit,
     required this.studentGrade,
     this.initialStreamIndex = 0,
     this.subStream = 'all',
+    this.initialGovernorate,
+    this.initialAdministration,
   });
 
   @override
@@ -39,13 +44,10 @@ class _ResultPageState extends State<ResultPage> {
 
   Position? _userPosition;
   String? _selectedGovernorateName;
-  bool _isLocationLoading = false;
+  String? _selectedAdministrationName;
   bool _sortByNearest = false;
   bool _sortByDiffAscending = true;
   TansikZone? _activeZoneFilter;
-
-
-
 
   final List<CollegeRecommendation> _allRecs = [];
   final List<CollegeRecommendation> _guaranteed = [];
@@ -53,12 +55,33 @@ class _ResultPageState extends State<ResultPage> {
   final List<CollegeRecommendation> _ambitious = [];
   final List<CollegeRecommendation> _far = [];
 
-
   @override
   void initState() {
     super.initState();
     _selectedStreamIndex = widget.initialStreamIndex;
     _activeSubStream = widget.subStream;
+    if (widget.initialGovernorate != null) {
+      _selectedGovernorateName = widget.initialGovernorate!.name;
+      _selectedAdministrationName = widget.initialAdministration;
+      final targetLoc = CollegeLocationHelper.getLocationForSelection(
+        governorate: widget.initialGovernorate!,
+        administrationName: widget.initialAdministration,
+      );
+      _userPosition = Position(
+        latitude: targetLoc.lat,
+        longitude: targetLoc.lng,
+        timestamp: DateTime.now(),
+        accuracy: 100,
+        altitude: 0,
+        heading: 0,
+        speed: 0,
+        speedAccuracy: 0,
+        altitudeAccuracy: 0,
+        headingAccuracy: 0,
+      );
+      _sortByNearest = false;
+      _sortByDiffAscending = true;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchStreamLimits(_selectedStreamIndex);
     });
@@ -72,6 +95,18 @@ class _ResultPageState extends State<ResultPage> {
 
   void _fetchStreamLimits(int index) {
     switch (limits[index]) {
+      case 'المجموعة العلمية نظام حديث 2026':
+        widget.homeCubit.fetchElmyNew2026Limits();
+        break;
+      case 'المجموعة العلمية نظام قديم 2026':
+        widget.homeCubit.fetchElmyOld2026Limits();
+        break;
+      case 'المجموعة الأدبية نظام حديث 2026':
+        widget.homeCubit.fetchAdabyNew2026Limits();
+        break;
+      case 'المجموعة الأدبية نظام قديم 2026':
+        widget.homeCubit.fetchAdabyOld2026Limits();
+        break;
       case 'المجموعة العلمية نظام حديث 2025':
         widget.homeCubit.fetchElmyNew2025Limits();
         break;
@@ -171,169 +206,17 @@ class _ResultPageState extends State<ResultPage> {
     return true;
   }
 
-  Future<void> _fetchUserLocation() async {
-    setState(() {
-      _isLocationLoading = true;
-    });
-    try {
-      final result = await LocationService.getCurrentPosition();
-      if (result.position != null) {
-        setState(() {
-          _userPosition = result.position;
-          _selectedGovernorateName = null;
-          _sortByNearest = true;
-          _processRecommendations(_lastLoadedRows);
-        });
-        if (mounted) {
-          AppToast.showToast(
-            context: context,
-            title: 'تم تحديد موقعك',
-            description: 'تم حصر الكليات وتصنيف الأقرب إليك بنجاح',
-            type: ToastificationType.success,
-          );
-        }
-      } else {
-        if (mounted) {
-          AppToast.showToast(
-            context: context,
-            title: 'تنبيه الموقع',
-            description: result.errorMessage ?? 'يمكنك اختيار محافظتك يدوياً للحصول على نتائج دقيقة.',
-            type: ToastificationType.warning,
-          );
-          _showGovernorateSelectionModal();
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        _showGovernorateSelectionModal();
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLocationLoading = false;
-        });
-      }
-    }
+  int _compareZone(TansikZone? a, TansikZone? b) {
+    final indexA = a?.index ?? 3;
+    final indexB = b?.index ?? 3;
+    return indexA.compareTo(indexB);
   }
-
-  void _showGovernorateSelectionModal() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      builder: (context) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: Container(
-            height: MediaQuery.of(context).size.height * 0.65,
-            padding: EdgeInsets.all(16.r),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40.w,
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(2.r),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 12.h),
-                Text(
-                  'اختر محافظتك لترتيب الكليات الأقرب إليك',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'سيتم حساب المسافات وترتيب الكليات الأقرب لمحافظتك بكل دقة',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                SizedBox(height: 12.h),
-                Expanded(
-                  child: ListView.separated(
-                    itemCount: CollegeLocationHelper.governorates.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final gov = CollegeLocationHelper.governorates[index];
-                      final isSelected = _selectedGovernorateName == gov.name;
-
-                      return ListTile(
-                        dense: true,
-                        leading: Icon(
-                          Icons.location_city_rounded,
-                          color: isSelected
-                              ? FlexScheme.mandyRed.data.light.primary
-                              : Colors.grey.shade600,
-                          size: 20.sp,
-                        ),
-                        title: Text(
-                          gov.name,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                            color: isSelected
-                                ? FlexScheme.mandyRed.data.light.primary
-                                : Colors.black87,
-                          ),
-                        ),
-                        trailing: isSelected
-                            ? Icon(Icons.check_circle_rounded,
-                                color: FlexScheme.mandyRed.data.light.primary, size: 18.sp)
-                            : null,
-                        onTap: () {
-                          Navigator.pop(context);
-                          setState(() {
-                            _userPosition = Position(
-                              latitude: gov.lat,
-                              longitude: gov.lng,
-                              timestamp: DateTime.now(),
-                              accuracy: 100,
-                              altitude: 0,
-                              heading: 0,
-                              speed: 0,
-                              speedAccuracy: 0,
-                              altitudeAccuracy: 0,
-                              headingAccuracy: 0,
-                            );
-                            _selectedGovernorateName = gov.name;
-                            _sortByNearest = true;
-                            _processRecommendations(_lastLoadedRows);
-                          });
-                          AppToast.showToast(
-                            context: context,
-                            title: 'تم اختيار المحافظة',
-                            description: 'تم ترتيب الكليات الأقرب إلى ${gov.name} بنجاح',
-                            type: ToastificationType.success,
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-
 
   void _sortListByDistance(List<CollegeRecommendation> list) {
     list.sort((a, b) {
+      final zoneComp = _compareZone(a.tansikZone, b.tansikZone);
+      if (zoneComp != 0) return zoneComp;
+
       if (a.distanceInKm != null && b.distanceInKm != null) {
         return a.distanceInKm!.compareTo(b.distanceInKm!);
       } else if (a.distanceInKm != null) {
@@ -348,6 +231,9 @@ class _ResultPageState extends State<ResultPage> {
 
   void _sortListByDiff(List<CollegeRecommendation> list) {
     list.sort((a, b) {
+      final zoneComp = _compareZone(a.tansikZone, b.tansikZone);
+      if (zoneComp != 0) return zoneComp;
+
       if (_sortByDiffAscending) {
         return a.diff.compareTo(b.diff);
       } else {
@@ -406,11 +292,13 @@ class _ResultPageState extends State<ResultPage> {
           endLat: locationModel.lat,
           endLng: locationModel.lng,
         );
-        tansikZone = CollegeLocationHelper.calculateTansikZone(
-          distanceInKm: distanceInKm,
-          collegeName: collegeName,
-        );
       }
+      tansikZone = CollegeLocationHelper.calculateTansikZone(
+        collegeName: collegeName,
+        governorateName: _selectedGovernorateName,
+        administrationName: _selectedAdministrationName,
+        distanceInKm: distanceInKm,
+      );
 
       final rec = CollegeRecommendation(
         name: collegeName,
@@ -547,7 +435,6 @@ class _ResultPageState extends State<ResultPage> {
         ? '${widget.studentGrade.toStringAsFixed(2)}%'
         : '${widget.studentGrade.toStringAsFixed(1)} درجة';
 
-    final isScientific = limits[_selectedStreamIndex].contains('العلمية');
 
     return Container(
       width: double.infinity,
@@ -668,24 +555,6 @@ class _ResultPageState extends State<ResultPage> {
               ),
             ],
           ),
-          SizedBox(height: 10.h),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: [
-                if (isScientific) ...[
-                  _buildSubStreamFilterChip('🧬 علمي علوم', 'elmy_eloum'),
-                  SizedBox(width: 8.w),
-                  _buildSubStreamFilterChip('📐 علمي رياضة', 'elmy_riyada'),
-                  SizedBox(width: 8.w),
-                  _buildSubStreamFilterChip('🌟 الكل', 'all'),
-                  SizedBox(width: 8.w),
-                ],
-                _buildLocationToggleChip(),
-              ],
-            ),
-          ),
           SizedBox(height: 8.h),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -727,9 +596,7 @@ class _ResultPageState extends State<ResultPage> {
   }
 
   Widget _buildSortDiffChip() {
-
     final primaryColor = FlexScheme.mandyRed.data.light.primary;
-    final bool active = !_sortByNearest;
 
     return InkWell(
       onTap: () {
@@ -748,7 +615,7 @@ class _ResultPageState extends State<ResultPage> {
         duration: const Duration(milliseconds: 200),
         padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
         decoration: BoxDecoration(
-          color: active ? Colors.white : Colors.white.withValues(alpha: 0.15),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
         ),
@@ -758,7 +625,7 @@ class _ResultPageState extends State<ResultPage> {
             Icon(
               _sortByDiffAscending ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
               size: 14.sp,
-              color: active ? primaryColor : Colors.white,
+              color: primaryColor,
             ),
             SizedBox(width: 4.w),
             Text(
@@ -766,7 +633,7 @@ class _ResultPageState extends State<ResultPage> {
               style: TextStyle(
                 fontSize: 11.sp,
                 fontWeight: FontWeight.bold,
-                color: active ? primaryColor : Colors.white,
+                color: primaryColor,
               ),
             ),
           ],
@@ -784,140 +651,6 @@ class _ResultPageState extends State<ResultPage> {
         if (_activeZoneFilter != zone) {
           setState(() {
             _activeZoneFilter = zone;
-          });
-        }
-      },
-      borderRadius: BorderRadius.circular(14.r),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(
-            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.3),
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 11.sp,
-            fontWeight: FontWeight.bold,
-            color: isSelected ? primaryColor : Colors.white,
-          ),
-        ),
-      ),
-    );
-  }
-
-
-  Widget _buildLocationToggleChip() {
-    final bool active = _sortByNearest && _userPosition != null;
-    final String labelText = _selectedGovernorateName != null
-        ? '📍 الأقرب لـ $_selectedGovernorateName'
-        : (_userPosition != null
-            ? (_sortByNearest ? '📍 الأقرب أولاً (مفعل)' : '📍 فرز بالأقرب')
-            : '📍 الأقرب لموقعي (GPS)');
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        InkWell(
-          onTap: () {
-            if (_userPosition == null) {
-              _fetchUserLocation();
-            } else {
-              setState(() {
-                _sortByNearest = !_sortByNearest;
-                _processRecommendations(_lastLoadedRows);
-              });
-            }
-          },
-          borderRadius: BorderRadius.circular(14.r),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-            decoration: BoxDecoration(
-              color: active ? const Color(0xFF10B981) : Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(
-                color: active ? const Color(0xFF10B981) : Colors.white.withValues(alpha: 0.3),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (_isLocationLoading)
-                  SizedBox(
-                    width: 12.w,
-                    height: 12.h,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                else
-                  Icon(
-                    Icons.near_me_rounded,
-                    size: 14.sp,
-                    color: Colors.white,
-                  ),
-                SizedBox(width: 4.w),
-                Text(
-                  labelText,
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        SizedBox(width: 6.w),
-        InkWell(
-          onTap: _showGovernorateSelectionModal,
-          borderRadius: BorderRadius.circular(14.r),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.location_city_rounded, size: 14.sp, color: Colors.white),
-                SizedBox(width: 4.w),
-                Text(
-                  'اختر المحافظة',
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-
-
-  Widget _buildSubStreamFilterChip(String label, String value) {
-    final isSelected = _activeSubStream == value;
-    final primaryColor = FlexScheme.mandyRed.data.light.primary;
-    return InkWell(
-      onTap: () {
-        if (_activeSubStream != value) {
-          setState(() {
-            _activeSubStream = value;
-            _processRecommendations(_lastLoadedRows);
           });
         }
       },
@@ -1170,64 +903,39 @@ class _ResultPageState extends State<ResultPage> {
                 ),
               ],
             ),
-            if (rec.distanceInKm != null || rec.location != null || rec.tansikZone != null) ...[
+            if (rec.tansikZone != null) ...[
               SizedBox(height: 6.h),
               Row(
                 children: [
-                  if (rec.tansikZone != null) ...[
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                      decoration: BoxDecoration(
-                        color: rec.tansikZone!.color.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(10.r),
-                        border: Border.all(
-                          color: rec.tansikZone!.color.withValues(alpha: 0.3),
-                        ),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                    decoration: BoxDecoration(
+                      color: rec.tansikZone!.color.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10.r),
+                      border: Border.all(
+                        color: rec.tansikZone!.color.withValues(alpha: 0.3),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            rec.tansikZone!.icon,
-                            size: 12.sp,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          rec.tansikZone!.icon,
+                          size: 12.sp,
+                          color: rec.tansikZone!.color,
+                        ),
+                        SizedBox(width: 4.w),
+                        Text(
+                          rec.tansikZone!.label,
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.bold,
                             color: rec.tansikZone!.color,
                           ),
-                          SizedBox(width: 4.w),
-                          Text(
-                            rec.tansikZone!.label,
-                            style: TextStyle(
-                              fontSize: 11.sp,
-                              fontWeight: FontWeight.bold,
-                              color: rec.tansikZone!.color,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                  ],
-                  if (rec.distanceInKm != null)
-                    Expanded(
-                      child: Text(
-                        'تبعد حوالي ${rec.distanceInKm!.toStringAsFixed(1)} كم عن موقعك',
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: Colors.grey.shade700,
-                          fontWeight: FontWeight.w500,
                         ),
-                      ),
-                    )
-                  else if (rec.location != null)
-                    Expanded(
-                      child: Text(
-                        'جامعة / فرع ${rec.location!.name}',
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: Colors.grey.shade700,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                      ],
                     ),
+                  ),
                 ],
               ),
             ],

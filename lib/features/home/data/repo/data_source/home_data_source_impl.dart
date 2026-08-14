@@ -8,6 +8,26 @@ class HomeDataSourceImpl extends HomeDataSource {
   HomeDataSourceImpl(this.homeApi);
 
   @override
+  Future<ApiResult<LimitsModel>> fetchElmyNew2026Limits() async {
+    return await homeApi.fetchElmyNew2026Limits();
+  }
+
+  @override
+  Future<ApiResult<LimitsModel>> fetchElmyOld2026Limits() async {
+    return await homeApi.fetchElmyOld2026Limits();
+  }
+
+  @override
+  Future<ApiResult<LimitsModel>> fetchAdabyNew2026Limits() async {
+    return await homeApi.fetchAdabyNew2026Limits();
+  }
+
+  @override
+  Future<ApiResult<LimitsModel>> fetchAdabyOld2026Limits() async {
+    return await homeApi.fetchAdabyOld2026Limits();
+  }
+
+  @override
   Future<ApiResult<LimitsModel>> fetchAdaby2022Limits() async {
     return await homeApi.fetchAdaby2022Limits();
   }

@@ -2,11 +2,13 @@ class CollegeLocationModel {
   final String name;
   final double lat;
   final double lng;
+  final List<String> administrations;
 
   const CollegeLocationModel({
     required this.name,
     required this.lat,
     required this.lng,
+    this.administrations = const [],
   });
 
   /// Factory constructor to create a [CollegeLocationModel] from a JSON map.
@@ -15,6 +17,10 @@ class CollegeLocationModel {
       name: json['name'] as String? ?? '',
       lat: (json['lat'] as num?)?.toDouble() ?? 0.0,
       lng: (json['lng'] as num?)?.toDouble() ?? 0.0,
+      administrations: (json['administrations'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
     );
   }
 
@@ -24,6 +30,7 @@ class CollegeLocationModel {
       'name': name,
       'lat': lat,
       'lng': lng,
+      'administrations': administrations,
     };
   }
 
@@ -32,16 +39,19 @@ class CollegeLocationModel {
     String? name,
     double? lat,
     double? lng,
+    List<String>? administrations,
   }) {
     return CollegeLocationModel(
       name: name ?? this.name,
       lat: lat ?? this.lat,
       lng: lng ?? this.lng,
+      administrations: administrations ?? this.administrations,
     );
   }
 
   @override
-  String toString() => 'CollegeLocationModel(name: $name, lat: $lat, lng: $lng)';
+  String toString() =>
+      'CollegeLocationModel(name: $name, lat: $lat, lng: $lng, administrations: ${administrations.length})';
 
   @override
   bool operator ==(Object other) {
