@@ -79,6 +79,7 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     final primaryColor = FlexScheme.mandyRed.data.light.primary;
     final query = _normalizeText(_searchQuery);
 
@@ -133,15 +134,12 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                     ),
                   ],
                 ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.close_rounded, size: 22.sp, color: Colors.grey.shade600),
-                ),
               ],
             ),
             SizedBox(height: 12.h),
             // Search Input Field
             TextField(
+              onTapOutside: (_) => FocusScope.of(context).unfocus(),
               controller: _searchController,
               onChanged: (val) {
                 setState(() {
@@ -284,7 +282,7 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                                     widget.onSelect(gov, null);
                                   },
                                   child: Container(
-                                    width: double.infinity,
+                                    width: size.width,
                                     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                                     color: (isGovSelected && widget.currentAdministrationName == null)
                                         ? primaryColor.withValues(alpha: 0.08)
@@ -327,7 +325,7 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                                       widget.onSelect(gov, admin);
                                     },
                                     child: Container(
-                                      width: double.infinity,
+                                      width: size.width,
                                       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
                                       color: isAdminSelected
                                           ? primaryColor.withValues(alpha: 0.08)
@@ -347,9 +345,7 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                                               admin,
                                               style: TextStyle(
                                                 fontSize: 13.sp,
-                                                fontWeight: isAdminSelected
-                                                    ? FontWeight.bold
-                                                    : FontWeight.normal,
+                                                fontWeight: FontWeight.bold,
                                                 color: isAdminSelected
                                                     ? primaryColor
                                                     : Colors.grey.shade800,

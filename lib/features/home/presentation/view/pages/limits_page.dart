@@ -18,11 +18,15 @@ class LimitsPage extends StatefulWidget {
 
 class _LimitsPageState extends State<LimitsPage> {
   late final ScrollController _scrollController;
+  late final TextEditingController _searchController;
+  String _searchQuery = '';
+  double? parsedCell;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
+    _searchController = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchLimits();
     });
@@ -31,6 +35,7 @@ class _LimitsPageState extends State<LimitsPage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -85,7 +90,10 @@ class _LimitsPageState extends State<LimitsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(limits[widget.index], style: TextStyle(fontSize: 19.sp)),
+        title: Text(
+          limits[widget.index],
+          style: TextStyle(fontSize: 19.sp, fontWeight: FontWeight.w500),
+        ),
         centerTitle: true,
       ),
       body: BlocConsumer<HomeCubit, HomeState>(
@@ -111,7 +119,8 @@ class _LimitsPageState extends State<LimitsPage> {
                   ),
                   SizedBox(height: 16.h),
                   Text(
-                    'جاري تحميل البيانات...',
+                    textDirection: TextDirection.rtl,
+                    'جاري تحميل البيانات',
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
@@ -183,148 +192,206 @@ class _LimitsPageState extends State<LimitsPage> {
 
             final headerCount = state.data.headers.length;
 
-            return Stack(
-              children: [
-                Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return SingleChildScrollView(
-                        controller: _scrollController,
-                        scrollDirection: Axis.vertical,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minWidth: constraints.maxWidth,
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.all(16.r),
-                            child: DataTable(
-                              dataRowMaxHeight: 60.h,
-                              headingRowColor: WidgetStatePropertyAll(
-                                FlexScheme.aquaBlue.data.light.primary
-                                    .withAlpha(80),
-                              ),
-                              headingRowHeight: 80.h,
-                              border: TableBorder.all(
-                                color: Colors.grey.shade500,
-                                borderRadius: BorderRadius.circular(8.r),
-                              ),
-                              columns: state.data.headers
-                                  .map(
-                                    (header) => DataColumn(
-                                      label: Expanded(
-                                        child: Text(
-                                          header,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            fontSize: 18.sp,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                      headingRowAlignment:
-                                          MainAxisAlignment.center,
-                                    ),
-                                  )
-                                  .toList(),
-                              rows: state.data.rows.map((row) {
-                                final cellsToUse = row.length >= headerCount
-                                    ? row.sublist(0, headerCount)
-                                    : [
-                                        ...row,
-                                        ...List.filled(
-                                          headerCount - row.length,
-                                          '',
-                                        ),
-                                      ];
+            final filteredRows = state.data.rows.where((row) {
+              if (_searchQuery.trim().isEmpty) return true;
+              if (row.isEmpty) return false;
+              final collegeName = row[0].toLowerCase();
+              final query = _searchQuery.trim().toLowerCase();
+              return collegeName.contains(query);
+            }).toList();
 
-                                return DataRow(
-                                  color: WidgetStatePropertyAll(
-                                    FlexScheme.mandyRed.data.light.primary
-                                        .withAlpha(20),
+            return Column(
+              children: [
+                SizedBox(height: 12.h),
+                _buildSearchBar(),
+                Expanded(
+                  child: filteredRows.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(32.r),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.search_off_rounded,
+                                  size: 64.sp,
+                                  color: Colors.grey.shade400,
+                                ),
+                                SizedBox(height: 16.h),
+                                Text(
+                                  'لا توجد نتائج مطابقة لـ "$_searchQuery"',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 15.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey.shade600,
                                   ),
-                                  cells: cellsToUse
-                                      .map(
-                                        (cell) => DataCell(
-                                          Text(
-                                            cell,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              fontSize: 15.sp,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
-                                );
-                              }).toList(),
+                                ),
+                                SizedBox(height: 16.h),
+                                ElevatedButton.icon(
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() {
+                                      _searchQuery = '';
+                                    });
+                                  },
+                                  icon: const Icon(Icons.clear_rounded),
+                                  label: const Text('مسح البحث'),
+                                ),
+                              ],
                             ),
                           ),
+                        )
+                      : Stack(
+                          children: [
+                            Directionality(
+                              textDirection: TextDirection.rtl,
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  return SingleChildScrollView(
+                                    controller: _scrollController,
+                                    scrollDirection: Axis.vertical,
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        minWidth: constraints.maxWidth,
+                                      ),
+                                      child: Padding(
+                                        padding: EdgeInsets.all(16.r),
+                                        child: DataTable(
+                                          dataRowMaxHeight: 60.h,
+                                          headingRowColor: WidgetStatePropertyAll(
+                                            FlexScheme.aquaBlue.data.light.primary
+                                                .withAlpha(80),
+                                          ),
+                                          headingRowHeight: 80.h,
+                                          border: TableBorder.all(
+                                            color: Colors.grey.shade500,
+                                            borderRadius: BorderRadius.circular(8.r),
+                                          ),
+                                          columns: state.data.headers
+                                              .map(
+                                                (header) => DataColumn(
+                                                  label: Expanded(
+                                                    child: Text(
+                                                      header,
+                                                      maxLines: 2,
+                                                      overflow: TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        fontSize: 18.sp,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                  ),
+                                                  headingRowAlignment:
+                                                      MainAxisAlignment.center,
+                                                ),
+                                              )
+                                              .toList(),
+                                          rows: filteredRows.map((row) {
+                                            final cellsToUse = row.length >= headerCount
+                                                ? row.sublist(0, headerCount)
+                                                : [
+                                                    ...row,
+                                                    ...List.filled(
+                                                      headerCount - row.length,
+                                                      '',
+                                                    ),
+                                                  ];
+
+                                            return DataRow(
+                                              color: WidgetStatePropertyAll(
+                                                FlexScheme.mandyRed.data.light.primary
+                                                    .withAlpha(20),
+                                              ),
+                                              cells: cellsToUse
+                                                  .map(
+                                                    (cell) {
+                                                      parsedCell = double.tryParse(cell);
+                                                      return DataCell(
+                                                        Text(
+                                                          parsedCell != null && parsedCell! % 1 == 0
+                                                              ? parsedCell!.toStringAsFixed(0)
+                                                              : cell,
+                                                          maxLines: 2,
+                                                          overflow: TextOverflow.ellipsis,
+                                                          style: TextStyle(
+                                                            fontSize: 15.sp,
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                          textAlign: TextAlign.center,
+                                                        ),
+                                                      );
+                                                    },
+                                                  )
+                                                  .toList(),
+                                            );
+                                          }).toList(),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            Positioned(
+                              left: 16.w,
+                              bottom: 50.h,
+                              child: Column(
+                                spacing: 36.h,
+                                children: [
+                                  SizedBox(
+                                    width: 48.w,
+                                    height: 48.w,
+                                    child: FloatingActionButton(
+                                      onPressed: () {
+                                        _scrollController.animateTo(
+                                          _scrollController.position.minScrollExtent,
+                                          duration: const Duration(milliseconds: 500),
+                                          curve: Curves.easeInOut,
+                                        );
+                                      },
+                                      mini: true,
+                                      shape: const CircleBorder(),
+                                      backgroundColor: FlexScheme
+                                          .mandyRed
+                                          .data
+                                          .light
+                                          .secondaryLightRef!
+                                          .withAlpha(200),
+                                      child: Icon(Icons.arrow_upward_rounded, size: 24.sp),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 48.w,
+                                    height: 48.w,
+                                    child: FloatingActionButton(
+                                      onPressed: () {
+                                        _scrollController.animateTo(
+                                          _scrollController.position.maxScrollExtent,
+                                          duration: const Duration(milliseconds: 500),
+                                          curve: Curves.easeInOut,
+                                        );
+                                      },
+                                      mini: true,
+                                      shape: const CircleBorder(),
+                                      backgroundColor: FlexScheme
+                                          .mandyRed
+                                          .data
+                                          .light
+                                          .secondaryLightRef!
+                                          .withAlpha(200),
+                                      child: Icon(
+                                        Icons.arrow_downward_rounded,
+                                        size: 24.sp,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                  ),
-                ),
-                Positioned(
-                  left: 16.w,
-                  bottom: 50.h,
-                  child: Column(
-                    spacing: 36.h,
-                    children: [
-                      SizedBox(
-                        width: 48.w,
-                        height: 48.w,
-                        child: FloatingActionButton(
-                          onPressed: () {
-                            _scrollController.animateTo(
-                              _scrollController.position.minScrollExtent,
-                              duration: const Duration(milliseconds: 500),
-                              curve: Curves.easeInOut,
-                            );
-                          },
-                          mini: true,
-                          shape: const CircleBorder(),
-                          backgroundColor: FlexScheme
-                              .mandyRed
-                              .data
-                              .light
-                              .secondaryLightRef!
-                              .withAlpha(200),
-                          child: Icon(Icons.arrow_upward_rounded, size: 24.sp),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 48.w,
-                        height: 48.w,
-                        child: FloatingActionButton(
-                          onPressed: () {
-                            _scrollController.animateTo(
-                              _scrollController.position.maxScrollExtent,
-                              duration: const Duration(milliseconds: 500),
-                              curve: Curves.easeInOut,
-                            );
-                          },
-                          mini: true,
-                          shape: const CircleBorder(),
-                          backgroundColor: FlexScheme
-                              .mandyRed
-                              .data
-                              .light
-                              .secondaryLightRef!
-                              .withAlpha(200),
-                          child: Icon(
-                            Icons.arrow_downward_rounded,
-                            size: 24.sp,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ],
             );
@@ -336,6 +403,48 @@ class _LimitsPageState extends State<LimitsPage> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      color: Colors.white,
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+      child: Directionality(
+        textDirection: TextDirection.rtl,
+        child: TextField(
+          onTapOutside: (_) => FocusScope.of(context).unfocus(),
+          controller: _searchController,
+          onChanged: (val) {
+            setState(() {
+              _searchQuery = val;
+            });
+          },
+          decoration: InputDecoration(
+            hintText: 'ابحث عن اسم الكلية أو الجامعة...',
+            hintStyle: TextStyle(fontSize: 14.sp, color: Colors.grey.shade400),
+            prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade500, size: 22.sp),
+            suffixIcon: _searchQuery.isNotEmpty
+                ? IconButton(
+                    icon: Icon(Icons.close_rounded, color: Colors.grey.shade600, size: 18.sp),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() {
+                        _searchQuery = '';
+                      });
+                    },
+                  )
+                : null,
+            filled: true,
+            fillColor: Colors.grey.shade100,
+            contentPadding: EdgeInsets.symmetric(vertical: 0.h),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
       ),
     );
   }
