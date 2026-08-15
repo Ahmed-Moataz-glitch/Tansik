@@ -1,5 +1,5 @@
-import 'package:mostaqbaly/features/home/data/models/college_location_model.dart';
-import 'package:mostaqbaly/features/home/data/models/tansik_zone.dart';
+import 'package:tansik/features/home/data/models/college_location_model.dart';
+import 'package:tansik/features/home/data/models/tansik_zone.dart';
 
 enum RecommendationCategory {
   guaranteed, // مضمونة (diff >= 0)

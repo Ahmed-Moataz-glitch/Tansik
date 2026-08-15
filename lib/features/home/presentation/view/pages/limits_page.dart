@@ -2,9 +2,9 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:mostaqbaly/core/utils/app_toast.dart';
-import 'package:mostaqbaly/features/home/data/models/limits_model.dart';
-import 'package:mostaqbaly/features/home/presentation/view_model/home_cubit.dart';
+import 'package:tansik/core/utils/app_toast.dart';
+import 'package:tansik/features/home/data/models/limits_model.dart';
+import 'package:tansik/features/home/presentation/view_model/home_cubit.dart';
 import 'package:toastification/toastification.dart';
 
 class LimitsPage extends StatefulWidget {

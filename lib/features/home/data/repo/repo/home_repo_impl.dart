@@ -1,7 +1,7 @@
-import 'package:mostaqbaly/features/home/data/api/api_result.dart';
-import 'package:mostaqbaly/features/home/data/models/limits_model.dart';
-import 'package:mostaqbaly/features/home/domain/repo/data_source/home_data_source.dart';
-import 'package:mostaqbaly/features/home/domain/repo/repo/home_repo.dart';
+import 'package:tansik/features/home/data/api/api_result.dart';
+import 'package:tansik/features/home/data/models/limits_model.dart';
+import 'package:tansik/features/home/domain/repo/data_source/home_data_source.dart';
+import 'package:tansik/features/home/domain/repo/repo/home_repo.dart';
 
 class HomeRepoImpl extends HomeRepo {
   final HomeDataSource homeDataSource;

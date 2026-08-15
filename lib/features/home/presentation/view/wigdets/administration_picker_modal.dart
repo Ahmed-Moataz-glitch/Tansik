@@ -1,8 +1,8 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:mostaqbaly/features/home/data/models/college_location_helper.dart';
-import 'package:mostaqbaly/features/home/data/models/college_location_model.dart';
+import 'package:tansik/features/home/data/models/college_location_helper.dart';
+import 'package:tansik/features/home/data/models/college_location_model.dart';
 
 class AdministrationPickerModal extends StatefulWidget {
   final String? currentGovernorateName;

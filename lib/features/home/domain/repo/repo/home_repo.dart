@@ -1,5 +1,5 @@
-import 'package:mostaqbaly/features/home/data/api/api_result.dart';
-import 'package:mostaqbaly/features/home/data/models/limits_model.dart';
+import 'package:tansik/features/home/data/api/api_result.dart';
+import 'package:tansik/features/home/data/models/limits_model.dart';
 
 abstract class HomeRepo {
   Future<ApiResult<LimitsModel>> fetchElmyNew2026Limits();
