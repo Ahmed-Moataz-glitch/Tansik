@@ -2,8 +2,6 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:tansik/core/services/location_service.dart';
 import 'package:tansik/core/utils/app_toast.dart';
 import 'package:tansik/features/home/data/models/college_location_helper.dart';
 import 'package:tansik/features/home/data/models/limits_model.dart';
@@ -20,6 +18,7 @@ class ResultPage extends StatefulWidget {
   final String subStream; // 'elmy_eloum', 'elmy_riyada', 'adaby', 'all'
   final CollegeLocationModel? initialGovernorate;
   final String? initialAdministration;
+  final bool isNewSystem;
 
   const ResultPage({
     super.key,
@@ -29,6 +28,7 @@ class ResultPage extends StatefulWidget {
     this.subStream = 'all',
     this.initialGovernorate,
     this.initialAdministration,
+    this.isNewSystem = true,
   });
 
   @override
@@ -38,52 +38,56 @@ class ResultPage extends StatefulWidget {
 class _ResultPageState extends State<ResultPage> {
   late int _selectedStreamIndex;
   late String _activeSubStream;
-  List<List<String>> _lastLoadedRows = [];
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
-  Position? _userPosition;
   String? _selectedGovernorateName;
   String? _selectedAdministrationName;
   bool _sortByNearest = false;
   bool _sortByDiffAscending = true;
   TansikZone? _activeZoneFilter;
 
-  final List<CollegeRecommendation> _allRecs = [];
   final List<CollegeRecommendation> _guaranteed = [];
   final List<CollegeRecommendation> _likely = [];
   final List<CollegeRecommendation> _ambitious = [];
   final List<CollegeRecommendation> _far = [];
 
+  bool _isStreamAllowed(int index) {
+    final title = limits[index];
+    if (title.contains('2026')) return false;
+
+    final isAdabyTrack = widget.subStream == 'adaby';
+    if (isAdabyTrack && title.contains('العلمية')) return false;
+    if (!isAdabyTrack && title.contains('الأدبية')) return false;
+
+    if (widget.isNewSystem) {
+      if (!title.contains('نظام حديث')) return false;
+    } else {
+      if (title.contains('نظام حديث')) return false;
+    }
+
+    return true;
+  }
+
   @override
   void initState() {
     super.initState();
     _selectedStreamIndex = widget.initialStreamIndex;
+    if (_selectedStreamIndex < 0 ||
+        _selectedStreamIndex >= limits.length ||
+        !_isStreamAllowed(_selectedStreamIndex)) {
+      final isAdabyTrack = widget.subStream == 'adaby';
+      _selectedStreamIndex = (isAdabyTrack ? 6 : 4) + (widget.isNewSystem ? 0 : 1);
+    }
     _activeSubStream = widget.subStream;
     if (widget.initialGovernorate != null) {
       _selectedGovernorateName = widget.initialGovernorate!.name;
       _selectedAdministrationName = widget.initialAdministration;
-      final targetLoc = CollegeLocationHelper.getLocationForSelection(
-        governorate: widget.initialGovernorate!,
-        administrationName: widget.initialAdministration,
-      );
-      _userPosition = Position(
-        latitude: targetLoc.lat,
-        longitude: targetLoc.lng,
-        timestamp: DateTime.now(),
-        accuracy: 100,
-        altitude: 0,
-        heading: 0,
-        speed: 0,
-        speedAccuracy: 0,
-        altitudeAccuracy: 0,
-        headingAccuracy: 0,
-      );
       _sortByNearest = false;
       _sortByDiffAscending = true;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchStreamLimits(_selectedStreamIndex + 4);
+      _fetchStreamLimits(_selectedStreamIndex);
     });
   }
 
@@ -231,8 +235,6 @@ class _ResultPageState extends State<ResultPage> {
   }
 
   void _processRecommendations(List<List<String>> rows) {
-    _lastLoadedRows = rows;
-    _allRecs.clear();
     _guaranteed.clear();
     _likely.clear();
     _ambitious.clear();
@@ -273,14 +275,6 @@ class _ResultPageState extends State<ResultPage> {
       final locationModel = CollegeLocationHelper.getLocationForCollege(collegeName);
       double? distanceInKm;
       TansikZone? tansikZone;
-      if (locationModel != null && _userPosition != null) {
-        distanceInKm = LocationService.calculateDistanceInKm(
-          startLat: _userPosition!.latitude,
-          startLng: _userPosition!.longitude,
-          endLat: locationModel.lat,
-          endLng: locationModel.lng,
-        );
-      }
       tansikZone = CollegeLocationHelper.calculateTansikZone(
         collegeName: collegeName,
         governorateName: _selectedGovernorateName,
@@ -298,8 +292,6 @@ class _ResultPageState extends State<ResultPage> {
         distanceInKm: distanceInKm,
         tansikZone: tansikZone,
       );
-
-      _allRecs.add(rec);
       switch (category) {
         case RecommendationCategory.guaranteed:
           _guaranteed.add(rec);
@@ -317,13 +309,11 @@ class _ResultPageState extends State<ResultPage> {
     }
 
     if (_sortByNearest) {
-      _sortListByDistance(_allRecs);
       _sortListByDistance(_guaranteed);
       _sortListByDistance(_likely);
       _sortListByDistance(_ambitious);
       _sortListByDistance(_far);
     } else {
-      _sortListByDiff(_allRecs);
       _sortListByDiff(_guaranteed);
       _sortListByDiff(_likely);
       _sortListByDiff(_ambitious);
@@ -352,7 +342,7 @@ class _ResultPageState extends State<ResultPage> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: DefaultTabController(
-        length: 5,
+        length: 4,
         child: Scaffold(
           backgroundColor: const Color(0xFFA82631),
           appBar: AppBar(
@@ -398,7 +388,6 @@ class _ResultPageState extends State<ResultPage> {
                       color: Colors.grey.shade50,
                       child: TabBarView(
                         children: [
-                          _buildRecommendationsList(_filterList(_allRecs), 'لا توجد كليات مطابقة للبحث'),
                           _buildRecommendationsList(_filterList(_guaranteed), 'لا توجد كليات مضمونة في هذا التنسيق'),
                           _buildRecommendationsList(_filterList(_likely), 'لا توجد كليات محتملة القبول في هذا المجال'),
                           _buildRecommendationsList(_filterList(_ambitious), 'لا توجد كليات طموحة في نطاق هذا المجموع'),
@@ -421,11 +410,11 @@ class _ResultPageState extends State<ResultPage> {
     final isPercentage = widget.studentGrade <= 100;
     final displayGrade = isPercentage
         ? '${widget.studentGrade.toStringAsFixed(2)}%'
-        : '${widget.studentGrade.toStringAsFixed(1)} درجة';
+        : '${widget.studentGrade % 1 == 0 ? widget.studentGrade.toStringAsFixed(0) : widget.studentGrade.toStringAsFixed(1)} درجة';
 
 
     return Container(
-      width: double.infinity,
+      width: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -434,10 +423,6 @@ class _ResultPageState extends State<ResultPage> {
           ],
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24.r),
-          bottomRight: Radius.circular(24.r),
         ),
         boxShadow: [
           BoxShadow(
@@ -452,13 +437,14 @@ class _ResultPageState extends State<ResultPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            spacing: 16.w,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'مجموع الطالب المسجل',
+                    'مجموع الطالب',
                     style: TextStyle(
                       fontSize: 13.sp,
                       color: Colors.white.withValues(alpha: 0.85),
@@ -501,43 +487,51 @@ class _ResultPageState extends State<ResultPage> {
                   ),
                 ],
               ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<int>(
-                    value: _selectedStreamIndex,
-                    isDense: true,
-                    icon: Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      color: primaryColor,
-                      size: 20.sp,
+              Flexible(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<int>(
+                      borderRadius: BorderRadius.circular(12.r),
+                      value: _selectedStreamIndex,
+                      isDense: true,
+                      isExpanded: true,
+                      icon: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: primaryColor,
+                        size: 20.sp,
+                      ),
+                      items: [
+                        for (int i = 0; i < limits.length; i++)
+                          if (_isStreamAllowed(i))
+                            DropdownMenuItem<int>(
+                              alignment: Alignment.centerRight,
+                              value: i,
+                              child: Text(
+                                limits[i],
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: primaryColor,
+                                ),
+                              ),
+                            ),
+                      ],
+                      onChanged: (newIndex) {
+                        if (newIndex != null && newIndex != _selectedStreamIndex) {
+                          setState(() {
+                            _selectedStreamIndex = newIndex;
+                          });
+                          _fetchStreamLimits(newIndex);
+                        }
+                      },
                     ),
-                    items: List.generate(limits.length - 4, (index) {
-                      return DropdownMenuItem<int>(
-                        value: index,
-                        child: Text(
-                          limits[index + 4],
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.bold,
-                            color: primaryColor,
-                          ),
-                        ),
-                      );
-                    }),
-                    onChanged: (newIndex) {
-                      if (newIndex != null && newIndex != _selectedStreamIndex) {
-                        setState(() {
-                          _selectedStreamIndex = newIndex;
-                        });
-                        _fetchStreamLimits(newIndex);
-                      }
-                    },
                   ),
                 ),
               ),
@@ -549,8 +543,6 @@ class _ResultPageState extends State<ResultPage> {
             physics: const BouncingScrollPhysics(),
             child: Row(
               children: [
-                _buildSortDiffChip(),
-                SizedBox(width: 6.w),
                 _buildZoneFilterChip('🌐 جميع النطاقات', null),
                 SizedBox(width: 6.w),
                 _buildZoneFilterChip('🟢 مجموعة (أ)', TansikZone.zoneA),
@@ -579,53 +571,6 @@ class _ResultPageState extends State<ResultPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSortDiffChip() {
-    final primaryColor = FlexScheme.mandyRed.data.light.primary;
-
-    return InkWell(
-      onTap: () {
-        setState(() {
-          if (_sortByNearest) {
-            _sortByNearest = false;
-            _sortByDiffAscending = true;
-          } else {
-            _sortByDiffAscending = !_sortByDiffAscending;
-          }
-          _processRecommendations(_lastLoadedRows);
-        });
-      },
-      borderRadius: BorderRadius.circular(14.r),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              _sortByDiffAscending ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
-              size: 14.sp,
-              color: primaryColor,
-            ),
-            SizedBox(width: 4.w),
-            Text(
-              _sortByDiffAscending ? 'الفارق: تصاعدي' : 'الفارق: تنازلي',
-              style: TextStyle(
-                fontSize: 11.sp,
-                fontWeight: FontWeight.bold,
-                color: primaryColor,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -710,6 +655,7 @@ class _ResultPageState extends State<ResultPage> {
       color: Colors.white,
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       child: TextField(
+        onTapOutside: (_) => FocusScope.of(context).unfocus(),
         controller: _searchController,
         onChanged: (val) {
           setState(() {
@@ -756,7 +702,6 @@ class _ResultPageState extends State<ResultPage> {
         labelStyle: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold),
         unselectedLabelStyle: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w500),
         tabs: [
-          Tab(text: 'الكل (${_allRecs.length})'),
           Tab(text: '🌟 مضمونة (${_guaranteed.length})'),
           Tab(text: '🎯 محتملة (${_likely.length})'),
           Tab(text: '🚀 طموحة (${_ambitious.length})'),
@@ -834,7 +779,7 @@ class _ResultPageState extends State<ResultPage> {
     }
 
     final diffSign = rec.diff > 0 ? '+' : '';
-    final diffText = '$diffSign${rec.diff.toStringAsFixed(1)}';
+    final diffText = '$diffSign${rec.diff % 1 == 0 ? rec.diff.toStringAsFixed(0) : rec.diff.toStringAsFixed(1)}';
 
     return Card(
       margin: EdgeInsets.only(bottom: 12.h),
@@ -943,7 +888,7 @@ class _ResultPageState extends State<ResultPage> {
                       ),
                     ),
                     Text(
-                      rec.requiredGrade.toStringAsFixed(1),
+                      '${rec.requiredGrade % 1 == 0 ? rec.requiredGrade.toStringAsFixed(0) : rec.requiredGrade.toStringAsFixed(1)} درجة',
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.bold,
@@ -1004,7 +949,8 @@ class _ResultPageState extends State<ResultPage> {
           ),
           SizedBox(height: 16.h),
           Text(
-            'جاري تحليل نتائج التنسيق وحساب الفرص...',
+            textDirection: TextDirection.rtl,
+            'جاري تحليل نتائج التنسيق وحساب الفرص',
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.bold,

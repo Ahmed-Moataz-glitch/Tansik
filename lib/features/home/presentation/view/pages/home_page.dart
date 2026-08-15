@@ -1,7 +1,7 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:tansik/core/utils/app_assets.dart';
+import 'package:simple_gradient_text/simple_gradient_text.dart';
 import 'package:tansik/core/utils/app_routes.dart';
 import 'package:tansik/features/home/data/api/home_api.dart';
 import 'package:tansik/features/home/data/models/limits_model.dart';
@@ -33,7 +33,8 @@ class _HomePageState extends State<HomePage> {
   CollegeLocationModel? selectedGovernorate;
   String? selectedAdministration;
 
-  int get computedStreamIndex => (selectedTrack == 'adaby' ? 2 : 0) + (isNewSystem ? 0 : 1);
+  int get computedStreamIndex =>
+      4 + (selectedTrack == 'adaby' ? 2 : 0) + (isNewSystem ? 0 : 1);
 
   @override
   void initState() {
@@ -113,14 +114,19 @@ class _HomePageState extends State<HomePage> {
               SizedBox(height: size.height * 0.02),
               Align(
                 alignment: Alignment.center,
-                child: Image.asset(
-                  AppAssets.mostaqbaly,
-                  width: size.width * 0.4,
-                  height: size.height * 0.17,
-                  fit: BoxFit.contain,
+                child: GradientText(
+                  'تنسيق',
+                  style: TextStyle(fontSize: 40.sp, fontFamily: 'Rubik'),
+                  gradientType: GradientType.linear,
+                  // radius: 0.5,
+                  colors: [
+                    // FlexScheme.mandyRed.data.light.primary,
+                    FlexScheme.mandyRed.data.light.secondaryLightRef!,
+                    FlexScheme.mandyRed.data.light.primary,
+                  ],
                 ),
               ),
-              SizedBox(height: 36.h),
+              SizedBox(height: 64.h),
               Text(
                 'الشعبة التعليمية',
                 style: Theme.of(
@@ -179,17 +185,23 @@ class _HomePageState extends State<HomePage> {
                       child: Container(
                         padding: EdgeInsets.symmetric(vertical: 12.h),
                         decoration: BoxDecoration(
-                          color: isNewSystem ? primaryColor : Colors.grey.shade100,
+                          color: isNewSystem
+                              ? primaryColor
+                              : Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(12.r),
                           border: Border.all(
-                            color: isNewSystem ? primaryColor : Colors.grey.shade300,
+                            color: isNewSystem
+                                ? primaryColor
+                                : Colors.grey.shade300,
                           ),
                         ),
                         child: Column(
                           children: [
                             Icon(
                               Icons.auto_awesome_rounded,
-                              color: isNewSystem ? Colors.white : Colors.grey.shade700,
+                              color: isNewSystem
+                                  ? Colors.white
+                                  : Colors.grey.shade700,
                               size: 22.sp,
                             ),
                             SizedBox(height: 4.h),
@@ -198,7 +210,9 @@ class _HomePageState extends State<HomePage> {
                               style: TextStyle(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.bold,
-                                color: isNewSystem ? Colors.white : Colors.grey.shade700,
+                                color: isNewSystem
+                                    ? Colors.white
+                                    : Colors.grey.shade700,
                               ),
                             ),
                           ],
@@ -218,17 +232,23 @@ class _HomePageState extends State<HomePage> {
                       child: Container(
                         padding: EdgeInsets.symmetric(vertical: 12.h),
                         decoration: BoxDecoration(
-                          color: !isNewSystem ? primaryColor : Colors.grey.shade100,
+                          color: !isNewSystem
+                              ? primaryColor
+                              : Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(12.r),
                           border: Border.all(
-                            color: !isNewSystem ? primaryColor : Colors.grey.shade300,
+                            color: !isNewSystem
+                                ? primaryColor
+                                : Colors.grey.shade300,
                           ),
                         ),
                         child: Column(
                           children: [
                             Icon(
                               Icons.history_edu_rounded,
-                              color: !isNewSystem ? Colors.white : Colors.grey.shade700,
+                              color: !isNewSystem
+                                  ? Colors.white
+                                  : Colors.grey.shade700,
                               size: 22.sp,
                             ),
                             SizedBox(height: 4.h),
@@ -237,7 +257,9 @@ class _HomePageState extends State<HomePage> {
                               style: TextStyle(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.bold,
-                                color: !isNewSystem ? Colors.white : Colors.grey.shade700,
+                                color: !isNewSystem
+                                    ? Colors.white
+                                    : Colors.grey.shade700,
                               ),
                             ),
                           ],
@@ -271,42 +293,59 @@ class _HomePageState extends State<HomePage> {
                 },
                 borderRadius: BorderRadius.circular(12.r),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 14.w,
+                    vertical: 14.h,
+                  ),
                   decoration: BoxDecoration(
                     color: selectedGovernorate != null
                         ? primaryColor.withValues(alpha: 0.06)
                         : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
-                      color: selectedGovernorate != null ? primaryColor : Colors.grey.shade300,
+                      color: selectedGovernorate != null
+                          ? primaryColor
+                          : Colors.grey.shade300,
                     ),
                   ),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Icon(
-                        Icons.location_city_rounded,
-                        color: selectedGovernorate != null ? primaryColor : Colors.grey.shade600,
+                        Icons.keyboard_arrow_down_rounded,
+                        color: selectedGovernorate != null
+                            ? primaryColor
+                            : Colors.grey.shade600,
                         size: 22.sp,
                       ),
                       SizedBox(width: 10.w),
-                      Expanded(
-                        child: Text(
-                          selectedGovernorate == null
-                              ? 'اختر المحافظة والإدارة التعليمية'
-                              : (selectedAdministration != null
-                                  ? '$selectedAdministration - ${selectedGovernorate!.name}'
-                                  : 'محافظة ${selectedGovernorate!.name}'),
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            fontWeight: selectedGovernorate != null ? FontWeight.bold : FontWeight.w500,
-                            color: selectedGovernorate != null ? primaryColor : Colors.grey.shade700,
+                      Row(
+                        spacing: 12.w,
+                        children: [
+                          Text(
+                            selectedGovernorate == null
+                                ? 'اختر المحافظة والإدارة التعليمية'
+                                : (selectedAdministration != null
+                                      ? '$selectedAdministration - ${selectedGovernorate!.name}'
+                                      : 'محافظة ${selectedGovernorate!.name}'),
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              fontWeight: selectedGovernorate != null
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              color: selectedGovernorate != null
+                                  ? primaryColor
+                                  : Colors.grey.shade700,
+                            ),
                           ),
-                        ),
-                      ),
-                      Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        color: selectedGovernorate != null ? primaryColor : Colors.grey.shade600,
-                        size: 22.sp,
+                          Icon(
+                            Icons.location_city_rounded,
+                            color: selectedGovernorate != null
+                                ? primaryColor
+                                : Colors.grey.shade600,
+                            size: 22.sp,
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -336,19 +375,24 @@ class _HomePageState extends State<HomePage> {
                           AppToast.showToast(
                             context: context,
                             title: 'تنبيه',
-                            description: 'الرجاء إدخال مجموع صحيح أو نسبة مئوية صحيحة',
+                            description:
+                                'الرجاء إدخال مجموع صحيح أو نسبة مئوية صحيحة',
                             type: ToastificationType.warning,
                           );
                           return;
                         }
-                        Navigator.of(context).pushNamed(AppRoutes.result, arguments: {
-                          'homeCubit': homeCubit,
-                          'studentGrade': grade,
-                          'initialStreamIndex': computedStreamIndex,
-                          'subStream': selectedTrack,
-                          'selectedGovernorate': selectedGovernorate,
-                          'selectedAdministration': selectedAdministration,
-                        });
+                        Navigator.of(context).pushNamed(
+                          AppRoutes.result,
+                          arguments: {
+                            'homeCubit': homeCubit,
+                            'studentGrade': grade,
+                            'initialStreamIndex': computedStreamIndex,
+                            'subStream': selectedTrack,
+                            'selectedGovernorate': selectedGovernorate,
+                            'selectedAdministration': selectedAdministration,
+                            'isNewSystem': isNewSystem,
+                          },
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,

@@ -1,6 +1,9 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lottie/lottie.dart';
+import 'package:tansik/core/utils/app_assets.dart';
 import 'package:tansik/core/utils/app_constants.dart';
 import 'package:tansik/core/utils/app_routes.dart';
 import 'package:tansik/features/home/presentation/view/pages/home_page.dart';
@@ -26,6 +29,53 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: AppConstants.appName,
+          builder: (context, child) {
+            return OfflineBuilder(
+              connectivityBuilder: (context, connectivity, child) {
+                final connected = !connectivity.contains(
+                  ConnectivityResult.none,
+                );
+                return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    child,
+                    if (!connected)
+                      Scaffold(
+                        extendBodyBehindAppBar: true,
+                        backgroundColor: FlexScheme.mandyRed.data.light.primary,
+                        // color: FlexScheme.mandyRed.data.light.primary,
+                        body: Padding(
+                          padding: EdgeInsets.all(8.r),
+                          child: Center(
+                            child: Column(
+                              spacing: 12.h,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Lottie.asset(
+                                  AppAssets.noInternet,
+                                  width: 300.w,
+                                  height: 300.h,
+                                ),
+                                Text(
+                                  'لا يوجد اتصال بالإنترنت',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 20.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+              child: child!,
+            );
+          },
           theme: FlexThemeData.light(
             fontFamily:
                 'Rubik', // ده هيخلي الخط الأساسي في التطبيق هو Almarai [citation:10]
@@ -86,10 +136,14 @@ class MyApp extends StatelessWidget {
                     final args = settings.arguments as Map<String, dynamic>;
                     final homeCubit = args['homeCubit'] as HomeCubit;
                     final studentGrade = args['studentGrade'] as double;
-                    final initialStreamIndex = args['initialStreamIndex'] as int? ?? 0;
+                    final initialStreamIndex =
+                        args['initialStreamIndex'] as int? ?? 0;
                     final subStream = args['subStream'] as String? ?? 'all';
-                    final selectedGovernorate = args['selectedGovernorate'] as dynamic;
-                    final selectedAdministration = args['selectedAdministration'] as String?;
+                    final selectedGovernorate =
+                        args['selectedGovernorate'] as dynamic;
+                    final selectedAdministration =
+                        args['selectedAdministration'] as String?;
+                    final isNewSystem = args['isNewSystem'] as bool? ?? true;
                     return ResultPage(
                       homeCubit: homeCubit,
                       studentGrade: studentGrade,
@@ -97,6 +151,7 @@ class MyApp extends StatelessWidget {
                       subStream: subStream,
                       initialGovernorate: selectedGovernorate,
                       initialAdministration: selectedAdministration,
+                      isNewSystem: isNewSystem,
                     );
                   },
                 );

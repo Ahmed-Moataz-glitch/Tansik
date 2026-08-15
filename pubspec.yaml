@@ -19,7 +19,9 @@ dependencies:
   flutter_native_splash: ^2.4.7
   http: ^1.6.0
   flutter_scrapper: ^1.1.0
-  geolocator: ^13.0.2
+  flutter_offline: ^6.0.0
+  simple_gradient_text: ^1.4.0
+  lottie: ^3.3.3
 
 dev_dependencies:
   flutter_test:
@@ -34,6 +36,7 @@ flutter:
   assets:
     - assets/images/
     - assets/fonts/
+    - assets/lottie/
 
 
   fonts:

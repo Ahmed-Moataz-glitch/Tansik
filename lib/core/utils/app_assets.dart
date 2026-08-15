@@ -1,3 +1,3 @@
 abstract class AppAssets {
-  static const String mostaqbaly = 'assets/images/mostaqbaly.png';
+  static const String noInternet = 'assets/lottie/no_internet.json';
 }
