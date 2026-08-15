@@ -1,8 +1,8 @@
 import 'package:flutter_scrapper/mobile_scraper.dart';
-import 'package:mostaqbaly/core/utils/app_constants.dart';
-import 'package:mostaqbaly/features/home/data/api/api_result.dart';
-import 'package:mostaqbaly/features/home/data/models/limits_model.dart';
-import 'package:mostaqbaly/features/home/data/models/recommendation_model.dart';
+import 'package:tansik/core/utils/app_constants.dart';
+import 'package:tansik/features/home/data/api/api_result.dart';
+import 'package:tansik/features/home/data/models/limits_model.dart';
+import 'package:tansik/features/home/data/models/recommendation_model.dart';
 
 class HomeApi {
   Future<ApiResult<LimitsModel>> fetchElmyNew2026Limits() async {

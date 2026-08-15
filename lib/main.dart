@@ -1,12 +1,12 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:mostaqbaly/core/utils/app_constants.dart';
-import 'package:mostaqbaly/core/utils/app_routes.dart';
-import 'package:mostaqbaly/features/home/presentation/view/pages/home_page.dart';
-import 'package:mostaqbaly/features/home/presentation/view/pages/limits_page.dart';
-import 'package:mostaqbaly/features/home/presentation/view/pages/result_page.dart';
-import 'package:mostaqbaly/features/home/presentation/view_model/home_cubit.dart';
+import 'package:tansik/core/utils/app_constants.dart';
+import 'package:tansik/core/utils/app_routes.dart';
+import 'package:tansik/features/home/presentation/view/pages/home_page.dart';
+import 'package:tansik/features/home/presentation/view/pages/limits_page.dart';
+import 'package:tansik/features/home/presentation/view/pages/result_page.dart';
+import 'package:tansik/features/home/presentation/view_model/home_cubit.dart';
 
 void main() {
   runApp(const MyApp());

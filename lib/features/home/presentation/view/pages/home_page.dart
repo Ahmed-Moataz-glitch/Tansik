@@ -1,20 +1,20 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:mostaqbaly/core/utils/app_assets.dart';
-import 'package:mostaqbaly/core/utils/app_routes.dart';
-import 'package:mostaqbaly/features/home/data/api/home_api.dart';
-import 'package:mostaqbaly/features/home/data/models/limits_model.dart';
-import 'package:mostaqbaly/features/home/data/repo/data_source/home_data_source_impl.dart';
-import 'package:mostaqbaly/features/home/data/repo/repo/home_repo_impl.dart';
-import 'package:mostaqbaly/features/home/domain/repo/data_source/home_data_source.dart';
-import 'package:mostaqbaly/features/home/domain/repo/repo/home_repo.dart';
-import 'package:mostaqbaly/features/home/presentation/view/wigdets/text_form_field_widget.dart';
-import 'package:mostaqbaly/features/home/presentation/view/wigdets/validator.dart';
-import 'package:mostaqbaly/features/home/data/models/college_location_model.dart';
-import 'package:mostaqbaly/features/home/presentation/view/wigdets/administration_picker_modal.dart';
-import 'package:mostaqbaly/core/utils/app_toast.dart';
-import 'package:mostaqbaly/features/home/presentation/view_model/home_cubit.dart';
+import 'package:tansik/core/utils/app_assets.dart';
+import 'package:tansik/core/utils/app_routes.dart';
+import 'package:tansik/features/home/data/api/home_api.dart';
+import 'package:tansik/features/home/data/models/limits_model.dart';
+import 'package:tansik/features/home/data/repo/data_source/home_data_source_impl.dart';
+import 'package:tansik/features/home/data/repo/repo/home_repo_impl.dart';
+import 'package:tansik/features/home/domain/repo/data_source/home_data_source.dart';
+import 'package:tansik/features/home/domain/repo/repo/home_repo.dart';
+import 'package:tansik/features/home/presentation/view/wigdets/text_form_field_widget.dart';
+import 'package:tansik/features/home/presentation/view/wigdets/validator.dart';
+import 'package:tansik/features/home/data/models/college_location_model.dart';
+import 'package:tansik/features/home/presentation/view/wigdets/administration_picker_modal.dart';
+import 'package:tansik/core/utils/app_toast.dart';
+import 'package:tansik/features/home/presentation/view_model/home_cubit.dart';
 import 'package:toastification/toastification.dart';
 
 class HomePage extends StatefulWidget {
