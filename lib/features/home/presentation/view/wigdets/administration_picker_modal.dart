@@ -1,6 +1,6 @@
-import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:tansik/core/utils/app_colors.dart';
 import 'package:tansik/features/home/data/models/college_location_helper.dart';
 import 'package:tansik/features/home/data/models/college_location_model.dart';
 
@@ -28,7 +28,7 @@ class AdministrationPickerModal extends StatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
@@ -80,7 +80,8 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final primaryColor = FlexScheme.mandyRed.data.light.primary;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final query = _normalizeText(_searchQuery);
 
     // Filter governorates and their administrations based on search query
@@ -104,7 +105,7 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                 width: 44.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: isDark ? AppColors.darkBorder : Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -121,7 +122,7 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade900,
+                        color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
                       ),
                     ),
                     SizedBox(height: 2.h),
@@ -129,7 +130,7 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                       'سيتم ترتيب الكليات وحساب النطاق الجغرافي بناءً على اختيارك',
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: Colors.grey.shade600,
+                        color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                       ),
                     ),
                   ],
@@ -148,11 +149,11 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
               },
               decoration: InputDecoration(
                 hintText: 'ابحث عن المحافظة أو الإدارة التعليمية...',
-                hintStyle: TextStyle(fontSize: 13.sp, color: Colors.grey.shade400),
+                hintStyle: TextStyle(fontSize: 13.sp, color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight),
                 prefixIcon: Icon(Icons.search_rounded, color: primaryColor, size: 20.sp),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: Icon(Icons.clear_rounded, size: 18.sp, color: Colors.grey),
+                        icon: Icon(Icons.clear_rounded, size: 18.sp, color: isDark ? AppColors.textSecondaryDark : Colors.grey),
                         onPressed: () {
                           _searchController.clear();
                           setState(() {
@@ -162,7 +163,7 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                       )
                     : null,
                 filled: true,
-                fillColor: Colors.grey.shade100,
+                fillColor: isDark ? AppColors.darkScaffold : AppColors.lightUnselected,
                 contentPadding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 12.w),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14.r),
@@ -177,11 +178,11 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.search_off_rounded, size: 48.sp, color: Colors.grey.shade300),
+                          Icon(Icons.search_off_rounded, size: 48.sp, color: isDark ? AppColors.textMutedDark : Colors.grey.shade300),
                           SizedBox(height: 8.h),
                           Text(
                             'لا توجد إدارات أو محافظات مطابقة للبحث',
-                            style: TextStyle(fontSize: 14.sp, color: Colors.grey.shade600),
+                            style: TextStyle(fontSize: 14.sp, color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
                           ),
                         ],
                       ),
@@ -203,15 +204,17 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                         return Container(
                           margin: EdgeInsets.only(bottom: 8.h),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                             borderRadius: BorderRadius.circular(14.r),
                             border: Border.all(
-                              color: isGovSelected ? primaryColor : Colors.grey.shade200,
+                              color: isGovSelected
+                                  ? primaryColor
+                                  : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
                               width: isGovSelected ? 1.5 : 1,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.02),
+                                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
                                 blurRadius: 4,
                                 offset: const Offset(0, 2),
                               ),
@@ -235,13 +238,15 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                                 padding: EdgeInsets.all(8.r),
                                 decoration: BoxDecoration(
                                   color: isGovSelected
-                                      ? primaryColor.withValues(alpha: 0.1)
-                                      : Colors.grey.shade100,
+                                      ? primaryColor.withValues(alpha: isDark ? 0.25 : 0.1)
+                                      : (isDark ? AppColors.darkCard : AppColors.lightUnselected),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(
                                   Icons.location_city_rounded,
-                                  color: isGovSelected ? primaryColor : Colors.grey.shade700,
+                                  color: isGovSelected
+                                      ? primaryColor
+                                      : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
                                   size: 20.sp,
                                 ),
                               ),
@@ -253,21 +258,23 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                                       style: TextStyle(
                                         fontSize: 14.sp,
                                         fontWeight: isGovSelected ? FontWeight.bold : FontWeight.w600,
-                                        color: isGovSelected ? primaryColor : Colors.grey.shade900,
+                                        color: isGovSelected
+                                            ? primaryColor
+                                            : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight),
                                       ),
                                     ),
                                   ),
                                   Container(
                                     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                                     decoration: BoxDecoration(
-                                      color: Colors.grey.shade100,
+                                      color: isDark ? AppColors.darkCard : AppColors.lightUnselected,
                                       borderRadius: BorderRadius.circular(10.r),
                                     ),
                                     child: Text(
                                       '${gov.administrations.length} إدارة',
                                       style: TextStyle(
                                         fontSize: 11.sp,
-                                        color: Colors.grey.shade600,
+                                        color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -285,8 +292,8 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                                     width: size.width,
                                     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                                     color: (isGovSelected && widget.currentAdministrationName == null)
-                                        ? primaryColor.withValues(alpha: 0.08)
-                                        : Colors.grey.shade50,
+                                        ? primaryColor.withValues(alpha: isDark ? 0.25 : 0.08)
+                                        : (isDark ? AppColors.darkCard : AppColors.lightUnselected.withValues(alpha: 0.5)),
                                     child: Row(
                                       children: [
                                         Icon(
@@ -294,7 +301,7 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                                           size: 16.sp,
                                           color: (isGovSelected && widget.currentAdministrationName == null)
                                               ? primaryColor
-                                              : Colors.grey.shade600,
+                                              : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
                                         ),
                                         SizedBox(width: 10.w),
                                         Text(
@@ -306,14 +313,14 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                                                 : FontWeight.w500,
                                             color: (isGovSelected && widget.currentAdministrationName == null)
                                                 ? primaryColor
-                                                : Colors.grey.shade800,
+                                                : (isDark ? AppColors.textSecondaryDark : AppColors.textPrimaryLight),
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
                                 ),
-                                const Divider(height: 1),
+                                Divider(height: 1, color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
                                 // Educational administrations list
                                 ...matchingAdmins.map((admin) {
                                   final isAdminSelected = isGovSelected &&
@@ -328,8 +335,8 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                                       width: size.width,
                                       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
                                       color: isAdminSelected
-                                          ? primaryColor.withValues(alpha: 0.08)
-                                          : Colors.white,
+                                          ? primaryColor.withValues(alpha: isDark ? 0.25 : 0.08)
+                                          : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
                                       child: Row(
                                         children: [
                                           Icon(
@@ -337,7 +344,9 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                                                 ? Icons.check_circle_rounded
                                                 : Icons.school_outlined,
                                             size: 16.sp,
-                                            color: isAdminSelected ? primaryColor : Colors.grey.shade500,
+                                            color: isAdminSelected
+                                                ? primaryColor
+                                                : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
                                           ),
                                           SizedBox(width: 10.w),
                                           Expanded(
@@ -348,7 +357,7 @@ class _AdministrationPickerModalState extends State<AdministrationPickerModal> {
                                                 fontWeight: FontWeight.bold,
                                                 color: isAdminSelected
                                                     ? primaryColor
-                                                    : Colors.grey.shade800,
+                                                    : (isDark ? AppColors.textSecondaryDark : AppColors.textPrimaryLight),
                                               ),
                                             ),
                                           ),

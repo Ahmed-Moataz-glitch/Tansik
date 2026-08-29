@@ -1,9 +1,13 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tansik/core/theme/theme_cubit.dart';
 import 'package:tansik/core/utils/app_assets.dart';
+import 'package:tansik/core/utils/app_colors.dart';
 import 'package:tansik/core/utils/app_constants.dart';
 import 'package:tansik/core/utils/app_routes.dart';
 import 'package:tansik/features/home/presentation/view/pages/home_page.dart';
@@ -11,23 +15,35 @@ import 'package:tansik/features/home/presentation/view/pages/limits_page.dart';
 import 'package:tansik/features/home/presentation/view/pages/result_page.dart';
 import 'package:tansik/features/home/presentation/view_model/home_cubit.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences? prefs;
+  try {
+    prefs = await SharedPreferences.getInstance();
+  } catch (e) {
+    debugPrint('Failed to initialize SharedPreferences: $e');
+  }
+  runApp(MyApp(prefs: prefs));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final SharedPreferences? prefs;
+  const MyApp({super.key, this.prefs});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-      designSize: const Size(411, 869),
-      minTextAdapt: true,
-      splitScreenMode: true,
-      builder: (context, child) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
+    return BlocProvider(
+      create: (context) => ThemeCubit(prefs),
+      child: ScreenUtilInit(
+        designSize: const Size(411, 869),
+        minTextAdapt: true,
+        splitScreenMode: true,
+        builder: (context, child) {
+          return BlocBuilder<ThemeCubit, ThemeMode>(
+            builder: (context, themeMode) {
+              return MaterialApp(
+                debugShowCheckedModeBanner: false,
           title: AppConstants.appName,
           builder: (context, child) {
             return OfflineBuilder(
@@ -42,7 +58,7 @@ class MyApp extends StatelessWidget {
                     if (!connected)
                       Scaffold(
                         extendBodyBehindAppBar: true,
-                        backgroundColor: FlexScheme.mandyRed.data.light.primary,
+                        backgroundColor: AppColors.primary,
                         // color: FlexScheme.mandyRed.data.light.primary,
                         body: Padding(
                           padding: EdgeInsets.all(8.r),
@@ -77,41 +93,66 @@ class MyApp extends StatelessWidget {
             );
           },
           theme: FlexThemeData.light(
-            fontFamily:
-                'Rubik', // ده هيخلي الخط الأساسي في التطبيق هو Almarai [citation:10]
-            scheme: FlexScheme
-                .mandyRed, // ده هيخلي اللون الأساسي أحمر [citation:10]
-            appBarStyle: FlexAppBarStyle.primary, // لون AppBar أحمر
-            textTheme: TextTheme(
-              bodyMedium: TextStyle(
-                fontSize: 16.sp,
-                color: FlexScheme
-                    .mandyRed
-                    .data
-                    .light
-                    .primary, // ده هيخلي لون النص أحمر [citation:10]
-                fontWeight: FontWeight.bold,
-              ),
-              bodySmall: TextStyle(
-                fontSize: 14.sp,
-                color: FlexScheme
-                    .mandyRed
-                    .data
-                    .light
-                    .secondaryLightRef, // ده هيخلي لون النص أحمر [citation:10]
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            surfaceMode: FlexSurfaceMode
-                .highScaffoldLowSurface, // ده بيخلي الخلفية فاتحة [citation:10]
-          ),
-          // 2. (اختياري) لو عايز تدعم الوضع الليلي
-          darkTheme: FlexThemeData.dark(
+            fontFamily: 'Rubik',
             scheme: FlexScheme.mandyRed,
+            useMaterial3: true,
             appBarStyle: FlexAppBarStyle.primary,
+            surfaceMode: FlexSurfaceMode.levelSurfacesLowScaffold,
+            blendLevel: 7,
+            subThemesData: const FlexSubThemesData(
+              interactionEffects: true,
+              tintedDisabledControls: true,
+              blendOnLevel: 10,
+              inputDecoratorBorderType: FlexInputBorderType.outline,
+              inputDecoratorRadius: 14.0,
+              inputDecoratorUnfocusedHasBorder: true,
+              cardRadius: 16.0,
+              elevatedButtonRadius: 12.0,
+              dialogRadius: 18.0,
+              bottomSheetRadius: 24.0,
+              appBarCenterTitle: true,
+            ),
+            textTheme: TextTheme(
+              headlineLarge: TextStyle(fontFamily: 'Rubik', fontSize: 28.sp, fontWeight: FontWeight.bold),
+              titleLarge: TextStyle(fontFamily: 'Rubik', fontSize: 20.sp, fontWeight: FontWeight.bold),
+              titleMedium: TextStyle(fontFamily: 'Rubik', fontSize: 16.sp, fontWeight: FontWeight.w600),
+              bodyLarge: TextStyle(fontFamily: 'Rubik', fontSize: 16.sp, fontWeight: FontWeight.w500),
+              bodyMedium: TextStyle(fontFamily: 'Rubik', fontSize: 14.sp, fontWeight: FontWeight.w500),
+              bodySmall: TextStyle(fontFamily: 'Rubik', fontSize: 12.sp, fontWeight: FontWeight.w400),
+            ),
           ),
-          themeMode:
-              ThemeMode.system, // يختار تلقائي حسب إعدادات الجهاز [citation:10]
+          darkTheme: FlexThemeData.dark(
+            fontFamily: 'Rubik',
+            scheme: FlexScheme.mandyRed,
+            scaffoldBackground: AppColors.darkScaffold,
+            surface: AppColors.darkSurface,
+            useMaterial3: true,
+            appBarStyle: FlexAppBarStyle.primary,
+            surfaceMode: FlexSurfaceMode.levelSurfacesLowScaffold,
+            blendLevel: 0,
+            subThemesData: const FlexSubThemesData(
+              interactionEffects: true,
+              tintedDisabledControls: true,
+              blendOnLevel: 0,
+              inputDecoratorBorderType: FlexInputBorderType.outline,
+              inputDecoratorRadius: 14.0,
+              inputDecoratorUnfocusedHasBorder: true,
+              cardRadius: 16.0,
+              elevatedButtonRadius: 12.0,
+              dialogRadius: 18.0,
+              bottomSheetRadius: 24.0,
+              appBarCenterTitle: true,
+            ),
+            textTheme: TextTheme(
+              headlineLarge: TextStyle(fontFamily: 'Rubik', fontSize: 28.sp, fontWeight: FontWeight.bold),
+              titleLarge: TextStyle(fontFamily: 'Rubik', fontSize: 20.sp, fontWeight: FontWeight.bold),
+              titleMedium: TextStyle(fontFamily: 'Rubik', fontSize: 16.sp, fontWeight: FontWeight.w600),
+              bodyLarge: TextStyle(fontFamily: 'Rubik', fontSize: 16.sp, fontWeight: FontWeight.w500),
+              bodyMedium: TextStyle(fontFamily: 'Rubik', fontSize: 14.sp, fontWeight: FontWeight.w500),
+              bodySmall: TextStyle(fontFamily: 'Rubik', fontSize: 12.sp, fontWeight: FontWeight.w400),
+            ),
+          ),
+          themeMode: themeMode,
           onGenerateInitialRoutes: (_) => [
             MaterialPageRoute(builder: (context) => const HomePage()),
           ],
@@ -162,7 +203,10 @@ class MyApp extends StatelessWidget {
             }
           },
         );
+          },
+        );
       },
-    );
+    ),
+  );
   }
 }

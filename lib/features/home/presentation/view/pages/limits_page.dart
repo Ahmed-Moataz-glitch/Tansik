@@ -1,7 +1,7 @@
-import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:tansik/core/utils/app_colors.dart';
 import 'package:tansik/core/utils/app_toast.dart';
 import 'package:tansik/features/home/data/models/limits_model.dart';
 import 'package:tansik/features/home/presentation/view_model/home_cubit.dart';
@@ -115,7 +115,7 @@ class _LimitsPageState extends State<LimitsPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   CircularProgressIndicator(
-                    color: FlexScheme.mandyRed.data.light.primary,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   SizedBox(height: 16.h),
                   Text(
@@ -124,6 +124,7 @@ class _LimitsPageState extends State<LimitsPage> {
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
+                      color: Theme.of(context).brightness == Brightness.dark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
                     ),
                   ),
                 ],
@@ -165,18 +166,22 @@ class _LimitsPageState extends State<LimitsPage> {
           }
 
           if (state is HomeLoaded) {
+            final primaryColor = Theme.of(context).colorScheme.primary;
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+
             if (state.data.rows.isEmpty) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.inbox_rounded, size: 64.sp, color: Colors.grey),
+                    Icon(Icons.inbox_rounded, size: 64.sp, color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight),
                     SizedBox(height: 16.h),
                     Text(
                       'لا توجد بيانات متاحة حالياً',
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
+                        color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
                       ),
                     ),
                     SizedBox(height: 16.h),
@@ -215,7 +220,7 @@ class _LimitsPageState extends State<LimitsPage> {
                                 Icon(
                                   Icons.search_off_rounded,
                                   size: 64.sp,
-                                  color: Colors.grey.shade400,
+                                  color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
                                 ),
                                 SizedBox(height: 16.h),
                                 Text(
@@ -224,7 +229,7 @@ class _LimitsPageState extends State<LimitsPage> {
                                   style: TextStyle(
                                     fontSize: 15.sp,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.grey.shade600,
+                                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                                   ),
                                 ),
                                 SizedBox(height: 16.h),
@@ -260,13 +265,12 @@ class _LimitsPageState extends State<LimitsPage> {
                                         child: DataTable(
                                           dataRowMaxHeight: 60.h,
                                           headingRowColor: WidgetStatePropertyAll(
-                                            FlexScheme.aquaBlue.data.light.primary
-                                                .withAlpha(80),
+                                            primaryColor.withValues(alpha: isDark ? 0.22 : 0.08),
                                           ),
-                                          headingRowHeight: 80.h,
+                                          headingRowHeight: 70.h,
                                           border: TableBorder.all(
-                                            color: Colors.grey.shade500,
-                                            borderRadius: BorderRadius.circular(8.r),
+                                            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                                            borderRadius: BorderRadius.circular(12.r),
                                           ),
                                           columns: state.data.headers
                                               .map(
@@ -277,8 +281,9 @@ class _LimitsPageState extends State<LimitsPage> {
                                                       maxLines: 2,
                                                       overflow: TextOverflow.ellipsis,
                                                       style: TextStyle(
-                                                        fontSize: 18.sp,
+                                                        fontSize: 16.sp,
                                                         fontWeight: FontWeight.bold,
+                                                        color: isDark ? Colors.white : primaryColor,
                                                       ),
                                                       textAlign: TextAlign.center,
                                                     ),
@@ -288,7 +293,8 @@ class _LimitsPageState extends State<LimitsPage> {
                                                 ),
                                               )
                                               .toList(),
-                                          rows: filteredRows.map((row) {
+                                          rows: List.generate(filteredRows.length, (rowIndex) {
+                                            final row = filteredRows[rowIndex];
                                             final cellsToUse = row.length >= headerCount
                                                 ? row.sublist(0, headerCount)
                                                 : [
@@ -301,8 +307,11 @@ class _LimitsPageState extends State<LimitsPage> {
 
                                             return DataRow(
                                               color: WidgetStatePropertyAll(
-                                                FlexScheme.mandyRed.data.light.primary
-                                                    .withAlpha(20),
+                                                rowIndex.isEven
+                                                    ? (isDark ? AppColors.darkSurface : AppColors.lightSurface)
+                                                    : (isDark
+                                                        ? AppColors.darkCard.withValues(alpha: 0.6)
+                                                        : primaryColor.withValues(alpha: 0.03)),
                                               ),
                                               cells: cellsToUse
                                                   .map(
@@ -316,8 +325,9 @@ class _LimitsPageState extends State<LimitsPage> {
                                                           maxLines: 2,
                                                           overflow: TextOverflow.ellipsis,
                                                           style: TextStyle(
-                                                            fontSize: 15.sp,
-                                                            fontWeight: FontWeight.bold,
+                                                            fontSize: 14.sp,
+                                                            fontWeight: FontWeight.w600,
+                                                            color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
                                                           ),
                                                           textAlign: TextAlign.center,
                                                         ),
@@ -326,7 +336,7 @@ class _LimitsPageState extends State<LimitsPage> {
                                                   )
                                                   .toList(),
                                             );
-                                          }).toList(),
+                                          }),
                                         ),
                                       ),
                                     ),
@@ -338,11 +348,11 @@ class _LimitsPageState extends State<LimitsPage> {
                               left: 16.w,
                               bottom: 50.h,
                               child: Column(
-                                spacing: 36.h,
+                                spacing: 16.h,
                                 children: [
                                   SizedBox(
-                                    width: 48.w,
-                                    height: 48.w,
+                                    width: 46.w,
+                                    height: 46.w,
                                     child: FloatingActionButton(
                                       onPressed: () {
                                         _scrollController.animateTo(
@@ -353,18 +363,15 @@ class _LimitsPageState extends State<LimitsPage> {
                                       },
                                       mini: true,
                                       shape: const CircleBorder(),
-                                      backgroundColor: FlexScheme
-                                          .mandyRed
-                                          .data
-                                          .light
-                                          .secondaryLightRef!
-                                          .withAlpha(200),
-                                      child: Icon(Icons.arrow_upward_rounded, size: 24.sp),
+                                      backgroundColor: primaryColor,
+                                      foregroundColor: Colors.white,
+                                      elevation: 3,
+                                      child: Icon(Icons.arrow_upward_rounded, size: 22.sp),
                                     ),
                                   ),
                                   SizedBox(
-                                    width: 48.w,
-                                    height: 48.w,
+                                    width: 46.w,
+                                    height: 46.w,
                                     child: FloatingActionButton(
                                       onPressed: () {
                                         _scrollController.animateTo(
@@ -375,15 +382,12 @@ class _LimitsPageState extends State<LimitsPage> {
                                       },
                                       mini: true,
                                       shape: const CircleBorder(),
-                                      backgroundColor: FlexScheme
-                                          .mandyRed
-                                          .data
-                                          .light
-                                          .secondaryLightRef!
-                                          .withAlpha(200),
+                                      backgroundColor: primaryColor,
+                                      foregroundColor: Colors.white,
+                                      elevation: 3,
                                       child: Icon(
                                         Icons.arrow_downward_rounded,
-                                        size: 24.sp,
+                                        size: 22.sp,
                                       ),
                                     ),
                                   ),
@@ -399,7 +403,7 @@ class _LimitsPageState extends State<LimitsPage> {
 
           return Center(
             child: CircularProgressIndicator(
-              color: FlexScheme.mandyRed.data.light.primary,
+              color: Theme.of(context).colorScheme.primary,
             ),
           );
         },
@@ -408,8 +412,10 @@ class _LimitsPageState extends State<LimitsPage> {
   }
 
   Widget _buildSearchBar() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).colorScheme.primary;
     return Container(
-      color: Colors.white,
+      color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       child: Directionality(
         textDirection: TextDirection.rtl,
@@ -423,11 +429,11 @@ class _LimitsPageState extends State<LimitsPage> {
           },
           decoration: InputDecoration(
             hintText: 'ابحث عن اسم الكلية أو الجامعة...',
-            hintStyle: TextStyle(fontSize: 14.sp, color: Colors.grey.shade400),
-            prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade500, size: 22.sp),
+            hintStyle: TextStyle(fontSize: 14.sp, color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight),
+            prefixIcon: Icon(Icons.search_rounded, color: isDark ? AppColors.textSecondaryDark : primaryColor, size: 22.sp),
             suffixIcon: _searchQuery.isNotEmpty
                 ? IconButton(
-                    icon: Icon(Icons.close_rounded, color: Colors.grey.shade600, size: 18.sp),
+                    icon: Icon(Icons.close_rounded, color: isDark ? AppColors.textSecondaryDark : Colors.grey.shade600, size: 18.sp),
                     onPressed: () {
                       _searchController.clear();
                       setState(() {
@@ -437,10 +443,10 @@ class _LimitsPageState extends State<LimitsPage> {
                   )
                 : null,
             filled: true,
-            fillColor: Colors.grey.shade100,
+            fillColor: isDark ? AppColors.darkScaffold : AppColors.lightUnselected,
             contentPadding: EdgeInsets.symmetric(vertical: 0.h),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(14.r),
               borderSide: BorderSide.none,
             ),
           ),
