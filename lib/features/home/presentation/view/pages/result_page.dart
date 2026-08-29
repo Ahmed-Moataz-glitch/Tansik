@@ -1,7 +1,7 @@
-import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:tansik/core/utils/app_colors.dart';
 import 'package:tansik/core/utils/app_toast.dart';
 import 'package:tansik/features/home/data/models/college_location_helper.dart';
 import 'package:tansik/features/home/data/models/limits_model.dart';
@@ -338,13 +338,14 @@ class _ResultPageState extends State<ResultPage> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: DefaultTabController(
         length: 4,
         child: Scaffold(
-          backgroundColor: const Color(0xFFA82631),
           appBar: AppBar(
             elevation: 0,
             title: Text(
@@ -385,7 +386,9 @@ class _ResultPageState extends State<ResultPage> {
                   _buildTabBar(),
                   Expanded(
                     child: Container(
-                      color: Colors.grey.shade50,
+                      color: isDark
+                          ? AppColors.darkScaffold
+                          : AppColors.lightScaffold,
                       child: TabBarView(
                         children: [
                           _buildRecommendationsList(_filterList(_guaranteed), 'لا توجد كليات مضمونة في هذا التنسيق'),
@@ -406,27 +409,20 @@ class _ResultPageState extends State<ResultPage> {
   }
 
   Widget _buildHeaderDashboard(BuildContext context) {
-    final primaryColor = FlexScheme.mandyRed.data.light.primary;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isPercentage = widget.studentGrade <= 100;
     final displayGrade = isPercentage
         ? '${widget.studentGrade.toStringAsFixed(2)}%'
         : '${widget.studentGrade % 1 == 0 ? widget.studentGrade.toStringAsFixed(0) : widget.studentGrade.toStringAsFixed(1)} درجة';
 
-
     return Container(
       width: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            primaryColor,
-            primaryColor.withValues(alpha: 0.85),
-          ],
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-        ),
+        gradient: AppColors.headerGradient,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -491,7 +487,7 @@ class _ResultPageState extends State<ResultPage> {
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? AppColors.darkSurface : Colors.white,
                     borderRadius: BorderRadius.circular(16.r),
                     border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
                   ),
@@ -503,7 +499,7 @@ class _ResultPageState extends State<ResultPage> {
                       isExpanded: true,
                       icon: Icon(
                         Icons.keyboard_arrow_down_rounded,
-                        color: primaryColor,
+                        color: isDark ? Colors.white : primaryColor,
                         size: 20.sp,
                       ),
                       items: [
@@ -518,7 +514,7 @@ class _ResultPageState extends State<ResultPage> {
                                 style: TextStyle(
                                   fontSize: 12.sp,
                                   fontWeight: FontWeight.bold,
-                                  color: primaryColor,
+                                  color: isDark ? Colors.white : primaryColor,
                                 ),
                               ),
                             ),
@@ -537,7 +533,7 @@ class _ResultPageState extends State<ResultPage> {
               ),
             ],
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 10.h),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
@@ -553,21 +549,99 @@ class _ResultPageState extends State<ResultPage> {
               ],
             ),
           ),
+          SizedBox(height: 12.h),
+          _buildSelectedCriteriaChips(),
+        ],
+      ),
+    );
+  }
 
-          SizedBox(height: 14.h),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: [
-                _buildStatPill('🌟 مضمونة', _guaranteed.length, const Color(0xFF10B981)),
-                SizedBox(width: 8.w),
-                _buildStatPill('🎯 محتملة', _likely.length, const Color(0xFF3B82F6)),
-                SizedBox(width: 8.w),
-                _buildStatPill('🚀 طموحة', _ambitious.length, const Color(0xFFF59E0B)),
-                SizedBox(width: 8.w),
-                _buildStatPill('❄️ بعيدة', _far.length, const Color(0xFF64748B)),
-              ],
+  Widget _buildSelectedCriteriaChips() {
+    // 1. Study System
+    final systemLabel = widget.isNewSystem ? 'نظام حديث' : 'نظام قديم';
+
+    // 2. Educational Track / SubStream
+    String trackLabel;
+    IconData trackIcon;
+    switch (widget.subStream) {
+      case 'elmy_eloum':
+        trackLabel = 'علمي علوم';
+        trackIcon = Icons.biotech_rounded;
+        break;
+      case 'elmy_riyada':
+        trackLabel = 'علمي رياضة';
+        trackIcon = Icons.calculate_rounded;
+        break;
+      case 'adaby':
+        trackLabel = 'أدبي';
+        trackIcon = Icons.menu_book_rounded;
+        break;
+      default:
+        trackLabel = 'شعبة عامة';
+        trackIcon = Icons.school_rounded;
+        break;
+    }
+
+    // 3. Location / Governorate & Administration
+    String locationLabel;
+    if (_selectedGovernorateName != null && _selectedAdministrationName != null) {
+      locationLabel = '$_selectedGovernorateName - $_selectedAdministrationName';
+    } else if (_selectedGovernorateName != null) {
+      locationLabel = '$_selectedGovernorateName (مركز المحافظة)';
+    } else if (widget.initialGovernorate != null && widget.initialAdministration != null) {
+      locationLabel = '${widget.initialGovernorate!.name} - ${widget.initialAdministration}';
+    } else if (widget.initialGovernorate != null) {
+      locationLabel = '${widget.initialGovernorate!.name} (مركز المحافظة)';
+    } else {
+      locationLabel = 'جميع المحافظات';
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: [
+          _buildCriteriaChip(
+            icon: Icons.history_edu_rounded,
+            label: systemLabel,
+          ),
+          SizedBox(width: 8.w),
+          _buildCriteriaChip(
+            icon: trackIcon,
+            label: trackLabel,
+          ),
+          SizedBox(width: 8.w),
+          _buildCriteriaChip(
+            icon: Icons.location_on_rounded,
+            label: locationLabel,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCriteriaChip({required IconData icon, required String label}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.35),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15.sp, color: Colors.white),
+          SizedBox(width: 6.w),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -576,9 +650,8 @@ class _ResultPageState extends State<ResultPage> {
   }
 
   Widget _buildZoneFilterChip(String label, TansikZone? zone) {
-
     final isSelected = _activeZoneFilter == zone;
-    final primaryColor = FlexScheme.mandyRed.data.light.primary;
+    final primaryColor = Theme.of(context).colorScheme.primary;
     return InkWell(
       onTap: () {
         if (_activeZoneFilter != zone) {
@@ -592,10 +665,10 @@ class _ResultPageState extends State<ResultPage> {
         duration: const Duration(milliseconds: 200),
         padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.15),
+          color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.18),
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
-            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.3),
+            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.35),
           ),
         ),
         child: Text(
@@ -610,49 +683,11 @@ class _ResultPageState extends State<ResultPage> {
     );
   }
 
-  Widget _buildStatPill(String title, int count, Color accentColor) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(width: 6.w),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-            decoration: BoxDecoration(
-              color: accentColor,
-              borderRadius: BorderRadius.circular(10.r),
-            ),
-            child: Text(
-              '$count',
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSearchBar() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).colorScheme.primary;
     return Container(
-      color: Colors.white,
+      color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       child: TextField(
         onTapOutside: (_) => FocusScope.of(context).unfocus(),
@@ -664,11 +699,11 @@ class _ResultPageState extends State<ResultPage> {
         },
         decoration: InputDecoration(
           hintText: 'ابحث عن اسم الكلية أو الجامعة...',
-          hintStyle: TextStyle(fontSize: 14.sp, color: Colors.grey.shade400),
-          prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade500, size: 22.sp),
+          hintStyle: TextStyle(fontSize: 14.sp, color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight),
+          prefixIcon: Icon(Icons.search_rounded, color: isDark ? AppColors.textSecondaryDark : primaryColor, size: 22.sp),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
-                  icon: Icon(Icons.close_rounded, color: Colors.grey.shade600, size: 18.sp),
+                  icon: Icon(Icons.close_rounded, color: isDark ? AppColors.textSecondaryDark : Colors.grey.shade600, size: 18.sp),
                   onPressed: () {
                     _searchController.clear();
                     setState(() {
@@ -678,10 +713,10 @@ class _ResultPageState extends State<ResultPage> {
                 )
               : null,
           filled: true,
-          fillColor: Colors.grey.shade100,
+          fillColor: isDark ? AppColors.darkScaffold : AppColors.lightUnselected,
           contentPadding: EdgeInsets.symmetric(vertical: 0.h),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(14.r),
             borderSide: BorderSide.none,
           ),
         ),
@@ -690,14 +725,16 @@ class _ResultPageState extends State<ResultPage> {
   }
 
   Widget _buildTabBar() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).colorScheme.primary;
     return Container(
-      color: Colors.white,
+      color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
       child: TabBar(
         isScrollable: true,
         tabAlignment: TabAlignment.start,
-        labelColor: FlexScheme.mandyRed.data.light.primary,
-        unselectedLabelColor: Colors.grey.shade600,
-        indicatorColor: FlexScheme.mandyRed.data.light.primary,
+        labelColor: primaryColor,
+        unselectedLabelColor: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+        indicatorColor: primaryColor,
         indicatorWeight: 3.h,
         labelStyle: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold),
         unselectedLabelStyle: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w500),
@@ -712,6 +749,7 @@ class _ResultPageState extends State<ResultPage> {
   }
 
   Widget _buildRecommendationsList(List<CollegeRecommendation> items, String emptyMessage) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     if (items.isEmpty) {
       return Center(
         child: Padding(
@@ -722,7 +760,7 @@ class _ResultPageState extends State<ResultPage> {
               Icon(
                 Icons.search_off_rounded,
                 size: 64.sp,
-                color: Colors.grey.shade400,
+                color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
               ),
               SizedBox(height: 16.h),
               Text(
@@ -731,7 +769,7 @@ class _ResultPageState extends State<ResultPage> {
                 style: TextStyle(
                   fontSize: 15.sp,
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade600,
+                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                 ),
               ),
             ],
@@ -751,28 +789,29 @@ class _ResultPageState extends State<ResultPage> {
   }
 
   Widget _buildCollegeCard(CollegeRecommendation rec) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     late final Color statusColor;
     late final String statusText;
     late final IconData statusIcon;
 
     switch (rec.category) {
       case RecommendationCategory.guaranteed:
-        statusColor = const Color(0xFF10B981);
+        statusColor = AppColors.guaranteed;
         statusText = 'فرصة مضمونة';
         statusIcon = Icons.check_circle_rounded;
         break;
       case RecommendationCategory.likely:
-        statusColor = const Color(0xFF3B82F6);
+        statusColor = AppColors.likely;
         statusText = 'فرصة محتملة';
         statusIcon = Icons.stars_rounded;
         break;
       case RecommendationCategory.ambitious:
-        statusColor = const Color(0xFFF59E0B);
+        statusColor = AppColors.ambitious;
         statusText = 'فرصة طموحة';
         statusIcon = Icons.bolt_rounded;
         break;
       case RecommendationCategory.far:
-        statusColor = const Color(0xFF94A3B8);
+        statusColor = AppColors.far;
         statusText = 'بعيدة التوقعات';
         statusIcon = Icons.info_outline_rounded;
         break;
@@ -781,54 +820,95 @@ class _ResultPageState extends State<ResultPage> {
     final diffSign = rec.diff > 0 ? '+' : '';
     final diffText = '$diffSign${rec.diff % 1 == 0 ? rec.diff.toStringAsFixed(0) : rec.diff.toStringAsFixed(1)}';
 
-    return Card(
+    return Container(
       margin: EdgeInsets.only(bottom: 12.h),
-      elevation: 1.5,
-      shape: RoundedRectangleBorder(
+      padding: EdgeInsets.all(16.r),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
         borderRadius: BorderRadius.circular(16.r),
-        side: BorderSide(
-          color: statusColor.withValues(alpha: 0.25),
-          width: 1.w,
+        border: Border.all(
+          color: statusColor.withValues(alpha: isDark ? 0.35 : 0.25),
+          width: 1.2,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: EdgeInsets.all(14.r),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    rec.name,
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                      height: 1.3,
-                    ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  rec.name,
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                    height: 1.3,
                   ),
                 ),
-                SizedBox(width: 8.w),
+              ),
+              SizedBox(width: 8.w),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: statusColor.withValues(alpha: isDark ? 0.4 : 0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(statusIcon, size: 14.sp, color: statusColor),
+                    SizedBox(width: 4.w),
+                    Text(
+                      statusText,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.bold,
+                        color: statusColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (rec.tansikZone != null) ...[
+            SizedBox(height: 8.h),
+            Row(
+              children: [
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                   decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+                    color: rec.tansikZone!.color.withValues(alpha: isDark ? 0.2 : 0.1),
+                    borderRadius: BorderRadius.circular(10.r),
+                    border: Border.all(
+                      color: rec.tansikZone!.color.withValues(alpha: isDark ? 0.4 : 0.3),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(statusIcon, size: 14.sp, color: statusColor),
+                      Icon(
+                        rec.tansikZone!.icon,
+                        size: 12.sp,
+                        color: rec.tansikZone!.color,
+                      ),
                       SizedBox(width: 4.w),
                       Text(
-                        statusText,
+                        rec.tansikZone!.label,
                         style: TextStyle(
                           fontSize: 11.sp,
                           fontWeight: FontWeight.bold,
-                          color: statusColor,
+                          color: rec.tansikZone!.color,
                         ),
                       ),
                     ],
@@ -836,105 +916,67 @@ class _ResultPageState extends State<ResultPage> {
                 ),
               ],
             ),
-            if (rec.tansikZone != null) ...[
-              SizedBox(height: 6.h),
+          ],
+          SizedBox(height: 12.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
               Row(
                 children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                    decoration: BoxDecoration(
-                      color: rec.tansikZone!.color.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10.r),
-                      border: Border.all(
-                        color: rec.tansikZone!.color.withValues(alpha: 0.3),
-                      ),
+                  Text(
+                    'الحد الأدنى: ',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          rec.tansikZone!.icon,
-                          size: 12.sp,
-                          color: rec.tansikZone!.color,
-                        ),
-                        SizedBox(width: 4.w),
-                        Text(
-                          rec.tansikZone!.label,
-                          style: TextStyle(
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.bold,
-                            color: rec.tansikZone!.color,
-                          ),
-                        ),
-                      ],
+                  ),
+                  Text(
+                    '${rec.requiredGrade % 1 == 0 ? rec.requiredGrade.toStringAsFixed(0) : rec.requiredGrade.toStringAsFixed(1)} درجة',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
                     ),
                   ),
                 ],
               ),
-            ],
-
-
-            SizedBox(height: 12.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      'الحد الأدنى: ',
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                    Text(
-                      '${rec.requiredGrade % 1 == 0 ? rec.requiredGrade.toStringAsFixed(0) : rec.requiredGrade.toStringAsFixed(1)} درجة',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 2.h),
-                  decoration: BoxDecoration(
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 2.h),
+                decoration: BoxDecoration(
+                  color: rec.diff >= 0
+                      ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.5) : const Color(0xFFECFDF5))
+                      : (isDark ? const Color(0xFF78350F).withValues(alpha: 0.5) : const Color(0xFFFFFBEB)),
+                  borderRadius: BorderRadius.circular(8.r),
+                  border: Border.all(
                     color: rec.diff >= 0
-                        ? const Color(0xFFECFDF5)
-                        : const Color(0xFFFFFBEB),
-                    borderRadius: BorderRadius.circular(8.r),
-                    border: Border.all(
-                      color: rec.diff >= 0
-                          ? const Color(0xFFA7F3D0)
-                          : const Color(0xFFFDE68A),
-                    ),
-                  ),
-                  child: Text(
-                    'الفارق: $diffText',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.bold,
-                      color: rec.diff >= 0
-                          ? const Color(0xFF047857)
-                          : const Color(0xFFB45309),
-                    ),
+                        ? (isDark ? const Color(0xFF059669) : const Color(0xFFA7F3D0))
+                        : (isDark ? const Color(0xFFD97706) : const Color(0xFFFDE68A)),
                   ),
                 ),
-              ],
-            ),
-            SizedBox(height: 10.h),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6.r),
-              child: LinearProgressIndicator(
-                value: (rec.effectiveStudentGrade / rec.requiredGrade).clamp(0.0, 1.0),
-                backgroundColor: Colors.grey.shade200,
-                color: statusColor,
-                minHeight: 6.h,
+                child: Text(
+                  'الفارق: $diffText',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.bold,
+                    color: rec.diff >= 0
+                        ? (isDark ? const Color(0xFF6EE7B7) : const Color(0xFF047857))
+                        : (isDark ? const Color(0xFFFCD34D) : const Color(0xFFB45309)),
+                  ),
+                ),
               ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6.r),
+            child: LinearProgressIndicator(
+              value: (rec.effectiveStudentGrade / rec.requiredGrade).clamp(0.0, 1.0),
+              backgroundColor: isDark ? AppColors.darkBorder : Colors.grey.shade200,
+              color: statusColor,
+              minHeight: 6.h,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -945,7 +987,7 @@ class _ResultPageState extends State<ResultPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircularProgressIndicator(
-            color: Colors.white,
+            color: primaryColor,
           ),
           SizedBox(height: 16.h),
           Text(
@@ -954,7 +996,7 @@ class _ResultPageState extends State<ResultPage> {
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Theme.of(context).brightness == Brightness.dark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
             ),
           ),
         ],
@@ -963,6 +1005,8 @@ class _ResultPageState extends State<ResultPage> {
   }
 
   Widget _buildErrorState(String message) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).colorScheme.primary;
     return Center(
       child: Padding(
         padding: EdgeInsets.all(24.r),
@@ -972,7 +1016,7 @@ class _ResultPageState extends State<ResultPage> {
             Icon(
               Icons.error_outline_rounded,
               size: 64.sp,
-              color: Colors.red.shade300,
+              color: Colors.red.shade400,
             ),
             SizedBox(height: 16.h),
             Text(
@@ -981,7 +1025,7 @@ class _ResultPageState extends State<ResultPage> {
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
               ),
             ),
             SizedBox(height: 24.h),
@@ -990,8 +1034,8 @@ class _ResultPageState extends State<ResultPage> {
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('إعادة المحاولة'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: FlexScheme.mandyRed.data.light.primary,
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
               ),
             ),
