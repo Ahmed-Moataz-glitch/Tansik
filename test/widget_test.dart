@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -123,6 +124,37 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(themeCubit.state, ThemeMode.light);
+
+      themeCubit.close();
+    });
+
+    testWidgets('HomePage configures AnnotatedRegion<SystemUiOverlayStyle> matching theme',
+        (WidgetTester tester) async {
+      final themeCubit = ThemeCubit();
+
+      await tester.pumpWidget(
+        BlocProvider<ThemeCubit>.value(
+          value: themeCubit,
+          child: ScreenUtilInit(
+            designSize: const Size(411, 869),
+            builder: (context, child) => MaterialApp(
+              theme: ThemeData.light(),
+              darkTheme: ThemeData.dark(),
+              themeMode: themeCubit.state,
+              home: const HomePage(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final regionFinder = find.byType(AnnotatedRegion<SystemUiOverlayStyle>);
+      expect(regionFinder, findsWidgets);
+
+      final regionWidget = tester.widget<AnnotatedRegion<SystemUiOverlayStyle>>(regionFinder.first);
+      expect(regionWidget.value.statusBarColor, Colors.transparent);
+      expect(regionWidget.value.statusBarIconBrightness, Brightness.dark);
+      expect(regionWidget.value.systemStatusBarContrastEnforced, false);
 
       themeCubit.close();
     });

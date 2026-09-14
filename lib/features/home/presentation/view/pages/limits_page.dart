@@ -5,6 +5,7 @@ import 'package:tansik/core/utils/app_colors.dart';
 import 'package:tansik/core/utils/app_toast.dart';
 import 'package:tansik/features/home/data/models/limits_model.dart';
 import 'package:tansik/features/home/presentation/view_model/home_cubit.dart';
+import 'package:tansik/features/home/presentation/view/wigdets/college_detail_bottom_sheet.dart';
 import 'package:toastification/toastification.dart';
 
 class LimitsPage extends StatefulWidget {
@@ -262,81 +263,166 @@ class _LimitsPageState extends State<LimitsPage> {
                                       ),
                                       child: Padding(
                                         padding: EdgeInsets.all(16.r),
-                                        child: DataTable(
-                                          dataRowMaxHeight: 60.h,
-                                          headingRowColor: WidgetStatePropertyAll(
-                                            primaryColor.withValues(alpha: isDark ? 0.22 : 0.08),
-                                          ),
-                                          headingRowHeight: 70.h,
-                                          border: TableBorder.all(
-                                            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                                            borderRadius: BorderRadius.circular(12.r),
-                                          ),
-                                          columns: state.data.headers
-                                              .map(
-                                                (header) => DataColumn(
-                                                  label: Expanded(
-                                                    child: Text(
-                                                      header,
-                                                      maxLines: 2,
-                                                      overflow: TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        fontSize: 16.sp,
-                                                        fontWeight: FontWeight.bold,
-                                                        color: isDark ? Colors.white : primaryColor,
-                                                      ),
-                                                      textAlign: TextAlign.center,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                                          children: [
+                                            Container(
+                                              margin: EdgeInsets.only(bottom: 12.h),
+                                              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                                              decoration: BoxDecoration(
+                                                color: primaryColor.withValues(alpha: isDark ? 0.15 : 0.08),
+                                                borderRadius: BorderRadius.circular(12.r),
+                                                border: Border.all(
+                                                  color: primaryColor.withValues(alpha: isDark ? 0.3 : 0.2),
+                                                ),
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  Container(
+                                                    padding: EdgeInsets.all(6.r),
+                                                    decoration: BoxDecoration(
+                                                      color: primaryColor.withValues(alpha: 0.15),
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: Icon(
+                                                      Icons.touch_app_rounded,
+                                                      size: 18.sp,
+                                                      color: primaryColor,
                                                     ),
                                                   ),
-                                                  headingRowAlignment:
-                                                      MainAxisAlignment.center,
-                                                ),
-                                              )
-                                              .toList(),
-                                          rows: List.generate(filteredRows.length, (rowIndex) {
-                                            final row = filteredRows[rowIndex];
-                                            final cellsToUse = row.length >= headerCount
-                                                ? row.sublist(0, headerCount)
-                                                : [
-                                                    ...row,
-                                                    ...List.filled(
-                                                      headerCount - row.length,
-                                                      '',
+                                                  SizedBox(width: 10.w),
+                                                  Expanded(
+                                                    child: Text(
+                                                      '💡 اضغط على اسم أي كلية بالجدول لعرض الأقسام المتاحة، المصروفات، والموقع بالتفصيل.',
+                                                      style: TextStyle(
+                                                        fontSize: 12.sp,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: isDark ? AppColors.textPrimaryDark : primaryColor,
+                                                        height: 1.35,
+                                                      ),
                                                     ),
-                                                  ];
-
-                                            return DataRow(
-                                              color: WidgetStatePropertyAll(
-                                                rowIndex.isEven
-                                                    ? (isDark ? AppColors.darkSurface : AppColors.lightSurface)
-                                                    : (isDark
-                                                        ? AppColors.darkCard.withValues(alpha: 0.6)
-                                                        : primaryColor.withValues(alpha: 0.03)),
+                                                  ),
+                                                ],
                                               ),
-                                              cells: cellsToUse
+                                            ),
+                                            DataTable(
+                                              dataRowMaxHeight: 60.h,
+                                              headingRowColor: WidgetStatePropertyAll(
+                                                primaryColor.withValues(alpha: isDark ? 0.22 : 0.08),
+                                              ),
+                                              headingRowHeight: 70.h,
+                                              border: TableBorder.all(
+                                                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                                                borderRadius: BorderRadius.circular(12.r),
+                                              ),
+                                              columns: state.data.headers
                                                   .map(
-                                                    (cell) {
-                                                      parsedCell = double.tryParse(cell);
-                                                      return DataCell(
-                                                        Text(
-                                                          parsedCell != null && parsedCell! % 1 == 0
-                                                              ? parsedCell!.toStringAsFixed(0)
-                                                              : cell,
+                                                    (header) => DataColumn(
+                                                      label: Expanded(
+                                                        child: Text(
+                                                          header,
                                                           maxLines: 2,
                                                           overflow: TextOverflow.ellipsis,
                                                           style: TextStyle(
-                                                            fontSize: 14.sp,
-                                                            fontWeight: FontWeight.w600,
-                                                            color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                                                            fontSize: 16.sp,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: isDark ? Colors.white : primaryColor,
                                                           ),
                                                           textAlign: TextAlign.center,
                                                         ),
-                                                      );
-                                                    },
+                                                      ),
+                                                      headingRowAlignment:
+                                                          MainAxisAlignment.center,
+                                                    ),
                                                   )
                                                   .toList(),
-                                            );
-                                          }),
+                                              rows: List.generate(filteredRows.length, (rowIndex) {
+                                                final row = filteredRows[rowIndex];
+                                                final cellsToUse = row.length >= headerCount
+                                                    ? row.sublist(0, headerCount)
+                                                    : [
+                                                        ...row,
+                                                        ...List.filled(
+                                                          headerCount - row.length,
+                                                          '',
+                                                        ),
+                                                      ];
+
+                                                return DataRow(
+                                                  color: WidgetStatePropertyAll(
+                                                    rowIndex.isEven
+                                                        ? (isDark ? AppColors.darkSurface : AppColors.lightSurface)
+                                                        : (isDark
+                                                            ? AppColors.darkCard.withValues(alpha: 0.6)
+                                                            : primaryColor.withValues(alpha: 0.03)),
+                                                  ),
+                                                  cells: cellsToUse
+                                                      .asMap()
+                                                      .entries
+                                                      .map(
+                                                        (entry) {
+                                                          final cellIndex = entry.key;
+                                                          final cell = entry.value;
+                                                          parsedCell = double.tryParse(cell);
+                                                          final cellText = parsedCell != null && parsedCell! % 1 == 0
+                                                              ? parsedCell!.toStringAsFixed(0)
+                                                              : cell;
+
+                                                          return DataCell(
+                                                            cellIndex == 0
+                                                                ? Row(
+                                                                    mainAxisSize: MainAxisSize.min,
+                                                                    children: [
+                                                                      Icon(
+                                                                        Icons.touch_app_rounded,
+                                                                        size: 14.sp,
+                                                                        color: primaryColor.withValues(alpha: 0.8),
+                                                                      ),
+                                                                      SizedBox(width: 4.w),
+                                                                      Flexible(
+                                                                        child: Text(
+                                                                          cellText,
+                                                                          maxLines: 2,
+                                                                          overflow: TextOverflow.ellipsis,
+                                                                          style: TextStyle(
+                                                                            fontSize: 14.sp,
+                                                                            fontWeight: FontWeight.w600,
+                                                                            color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  )
+                                                                : Text(
+                                                                    cellText,
+                                                                    maxLines: 2,
+                                                                    overflow: TextOverflow.ellipsis,
+                                                                    style: TextStyle(
+                                                                      fontSize: 14.sp,
+                                                                      fontWeight: FontWeight.w600,
+                                                                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                                                                    ),
+                                                                    textAlign: TextAlign.center,
+                                                                  ),
+                                                            onTap: () {
+                                                              final collegeName = cellsToUse.isNotEmpty ? cellsToUse[0].trim() : '';
+                                                              final grade = cellsToUse.length > 1 ? double.tryParse(cellsToUse[1].trim()) : null;
+                                                              if (collegeName.isNotEmpty) {
+                                                                CollegeDetailBottomSheet.show(
+                                                                  context: context,
+                                                                  collegeName: collegeName,
+                                                                  requiredGrade: grade,
+                                                                );
+                                                              }
+                                                            },
+                                                          );
+                                                        },
+                                                      )
+                                                      .toList(),
+                                                );
+                                              }),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
