@@ -9,7 +9,9 @@ import 'package:tansik/features/home/data/models/recommendation_model.dart';
 import 'package:tansik/features/home/presentation/view_model/home_cubit.dart';
 import 'package:toastification/toastification.dart';
 import 'package:tansik/features/home/data/models/college_location_model.dart';
+import 'package:tansik/features/home/data/models/institute_data_helper.dart';
 import 'package:tansik/features/home/data/models/tansik_zone.dart';
+import 'package:tansik/features/home/presentation/view/wigdets/college_detail_bottom_sheet.dart';
 
 class ResultPage extends StatefulWidget {
   final HomeCubit homeCubit;
@@ -778,18 +780,62 @@ class _ResultPageState extends State<ResultPage> {
       );
     }
 
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     return ListView.builder(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      itemCount: items.length,
+      itemCount: items.length + 1,
       itemBuilder: (context, index) {
-        final rec = items[index];
+        if (index == 0) {
+          return _buildTapHintBanner(isDark, primaryColor);
+        }
+        final rec = items[index - 1];
         return _buildCollegeCard(rec);
       },
     );
   }
 
+  Widget _buildTapHintBanner(bool isDark, Color primaryColor) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: primaryColor.withValues(alpha: isDark ? 0.15 : 0.08),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: primaryColor.withValues(alpha: isDark ? 0.3 : 0.2),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(6.r),
+            decoration: BoxDecoration(
+              color: primaryColor.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.touch_app_rounded, size: 18.sp, color: primaryColor),
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              '💡 اضغط على أي كلية لعرض تفاصيلها، الأقسام والشعب، المصروفات، والموقع الجغرافي.',
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.bold,
+                color: isDark ? AppColors.textPrimaryDark : primaryColor,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCollegeCard(CollegeRecommendation rec) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).colorScheme.primary;
     late final Color statusColor;
     late final String statusText;
     late final IconData statusIcon;
@@ -820,9 +866,10 @@ class _ResultPageState extends State<ResultPage> {
     final diffSign = rec.diff > 0 ? '+' : '';
     final diffText = '$diffSign${rec.diff % 1 == 0 ? rec.diff.toStringAsFixed(0) : rec.diff.toStringAsFixed(1)}';
 
+    final isPrivate = InstituteDataHelper.isPrivateInstitution(rec.name);
+
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
         borderRadius: BorderRadius.circular(16.r),
@@ -838,145 +885,241 @@ class _ResultPageState extends State<ResultPage> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  rec.name,
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
-                    height: 1.3,
-                  ),
-                ),
-              ),
-              SizedBox(width: 8.w),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: isDark ? 0.2 : 0.1),
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: statusColor.withValues(alpha: isDark ? 0.4 : 0.3)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            CollegeDetailBottomSheet.show(
+              context: context,
+              recommendation: rec,
+            );
+          },
+          borderRadius: BorderRadius.circular(16.r),
+          child: Padding(
+            padding: EdgeInsets.all(16.r),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(statusIcon, size: 14.sp, color: statusColor),
-                    SizedBox(width: 4.w),
-                    Text(
-                      statusText,
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.bold,
-                        color: statusColor,
+                    Expanded(
+                      child: Text(
+                        rec.name,
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                          height: 1.3,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: statusColor.withValues(alpha: isDark ? 0.4 : 0.3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(statusIcon, size: 14.sp, color: statusColor),
+                          SizedBox(width: 4.w),
+                          Text(
+                            statusText,
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.bold,
+                              color: statusColor,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          if (rec.tansikZone != null) ...[
-            SizedBox(height: 8.h),
-            Row(
-              children: [
+                SizedBox(height: 8.h),
+                Row(
+                  children: [
+                    if (isPrivate) ...[
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0284C7).withValues(alpha: isDark ? 0.2 : 0.1),
+                          borderRadius: BorderRadius.circular(8.r),
+                          border: Border.all(color: const Color(0xFF0284C7).withValues(alpha: isDark ? 0.4 : 0.3)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.corporate_fare_rounded, size: 12.sp, color: const Color(0xFF0284C7)),
+                            SizedBox(width: 4.w),
+                            Text(
+                              'معهد / كلية خاصة',
+                              style: TextStyle(
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF0284C7),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                    ],
+                    if (rec.tansikZone != null) ...[
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: rec.tansikZone!.color.withValues(alpha: isDark ? 0.2 : 0.1),
+                          borderRadius: BorderRadius.circular(8.r),
+                          border: Border.all(
+                            color: rec.tansikZone!.color.withValues(alpha: isDark ? 0.4 : 0.3),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              rec.tansikZone!.icon,
+                              size: 12.sp,
+                              color: rec.tansikZone!.color,
+                            ),
+                            SizedBox(width: 4.w),
+                            Text(
+                              rec.tansikZone!.label,
+                              style: TextStyle(
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.bold,
+                                color: rec.tansikZone!.color,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                SizedBox(height: 12.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'الحد الأدنى: ',
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                          ),
+                        ),
+                        Text(
+                          '${rec.requiredGrade % 1 == 0 ? rec.requiredGrade.toStringAsFixed(0) : rec.requiredGrade.toStringAsFixed(1)} درجة',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 2.h),
+                      decoration: BoxDecoration(
+                        color: rec.diff >= 0
+                            ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.5) : const Color(0xFFECFDF5))
+                            : (isDark ? const Color(0xFF78350F).withValues(alpha: 0.5) : const Color(0xFFFFFBEB)),
+                        borderRadius: BorderRadius.circular(8.r),
+                        border: Border.all(
+                          color: rec.diff >= 0
+                              ? (isDark ? const Color(0xFF059669) : const Color(0xFFA7F3D0))
+                              : (isDark ? const Color(0xFFD97706) : const Color(0xFFFDE68A)),
+                        ),
+                      ),
+                      child: Text(
+                        'الفارق: $diffText',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.bold,
+                          color: rec.diff >= 0
+                              ? (isDark ? const Color(0xFF6EE7B7) : const Color(0xFF047857))
+                              : (isDark ? const Color(0xFFFCD34D) : const Color(0xFFB45309)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10.h),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6.r),
+                  child: LinearProgressIndicator(
+                    value: (rec.effectiveStudentGrade / rec.requiredGrade).clamp(0.0, 1.0),
+                    backgroundColor: isDark ? AppColors.darkBorder : Colors.grey.shade200,
+                    color: statusColor,
+                    minHeight: 6.h,
+                  ),
+                ),
+                SizedBox(height: 10.h),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                   decoration: BoxDecoration(
-                    color: rec.tansikZone!.color.withValues(alpha: isDark ? 0.2 : 0.1),
+                    color: isPrivate
+                        ? const Color(0xFF10B981).withValues(alpha: isDark ? 0.15 : 0.08)
+                        : primaryColor.withValues(alpha: isDark ? 0.14 : 0.07),
                     borderRadius: BorderRadius.circular(10.r),
                     border: Border.all(
-                      color: rec.tansikZone!.color.withValues(alpha: isDark ? 0.4 : 0.3),
+                      color: isPrivate
+                          ? const Color(0xFF10B981).withValues(alpha: isDark ? 0.35 : 0.25)
+                          : primaryColor.withValues(alpha: isDark ? 0.3 : 0.18),
                     ),
                   ),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Icon(
-                        rec.tansikZone!.icon,
-                        size: 12.sp,
-                        color: rec.tansikZone!.color,
-                      ),
-                      SizedBox(width: 4.w),
-                      Text(
-                        rec.tansikZone!.label,
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.bold,
-                          color: rec.tansikZone!.color,
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.touch_app_rounded,
+                              size: 16.sp,
+                              color: isPrivate ? const Color(0xFF10B981) : primaryColor,
+                            ),
+                            SizedBox(width: 6.w),
+                            Expanded(
+                              child: Text(
+                                isPrivate
+                                    ? 'اضغط لعرض المصروفات والأقسام والاعتماد'
+                                    : 'اضغط لعرض الأقسام والشعب والتفاصيل والموقع',
+                                style: TextStyle(
+                                  fontSize: 11.5.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: isPrivate
+                                      ? (isDark ? const Color(0xFF6EE7B7) : const Color(0xFF047857))
+                                      : (isDark ? Colors.white : primaryColor),
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
+                      ),
+                      SizedBox(width: 6.w),
+                      Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 12.sp,
+                        color: isPrivate
+                            ? (isDark ? const Color(0xFF6EE7B7) : const Color(0xFF047857))
+                            : (isDark ? Colors.white70 : primaryColor),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-          ],
-          SizedBox(height: 12.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    'الحد الأدنى: ',
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                    ),
-                  ),
-                  Text(
-                    '${rec.requiredGrade % 1 == 0 ? rec.requiredGrade.toStringAsFixed(0) : rec.requiredGrade.toStringAsFixed(1)} درجة',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 2.h),
-                decoration: BoxDecoration(
-                  color: rec.diff >= 0
-                      ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.5) : const Color(0xFFECFDF5))
-                      : (isDark ? const Color(0xFF78350F).withValues(alpha: 0.5) : const Color(0xFFFFFBEB)),
-                  borderRadius: BorderRadius.circular(8.r),
-                  border: Border.all(
-                    color: rec.diff >= 0
-                        ? (isDark ? const Color(0xFF059669) : const Color(0xFFA7F3D0))
-                        : (isDark ? const Color(0xFFD97706) : const Color(0xFFFDE68A)),
-                  ),
-                ),
-                child: Text(
-                  'الفارق: $diffText',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.bold,
-                    color: rec.diff >= 0
-                        ? (isDark ? const Color(0xFF6EE7B7) : const Color(0xFF047857))
-                        : (isDark ? const Color(0xFFFCD34D) : const Color(0xFFB45309)),
-                  ),
-                ),
-              ),
-            ],
           ),
-          SizedBox(height: 10.h),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6.r),
-            child: LinearProgressIndicator(
-              value: (rec.effectiveStudentGrade / rec.requiredGrade).clamp(0.0, 1.0),
-              backgroundColor: isDark ? AppColors.darkBorder : Colors.grey.shade200,
-              color: statusColor,
-              minHeight: 6.h,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
