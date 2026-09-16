@@ -26,6 +26,7 @@
   - [1. Recommendation Engine (Classification & Tiering)](#1-recommendation-engine-classification--tiering)
   - [2. Official Geographic Distribution Engine (Zones أ, ب, ج)](#2-official-geographic-distribution-engine-zones-أ-ب-ج)
   - [3. Real-Time Web Scraping](#3-real-time-web-scraping)
+- [Demo Video](#-demo-video)
 - [Screenshots & UI Showcase](#-screenshots--ui-showcase)
 - [Architecture & Folder Structure](#-architecture--folder-structure)
 - [Tech Stack & Dependencies](#-tech-stack--dependencies)
@@ -134,6 +135,24 @@ Data is fetched from `https://tansik.digital.gov.eg`:
 1. Scraper fetches raw HTML for the respective endpoint (e.g., `/application/Certificates/Thanwy/Limits/LimitE2025.htm`).
 2. Targets `table[id="table14"]`, parses rows (`<tr>`) and cells (`<td>`).
 3. Strips HTML tags, decodes special entities (`&nbsp;`, `&amp;`, etc.), and extracts clean college names and minimum admission scores.
+
+---
+
+## 🎬 Demo Video
+
+<p align="center">
+  <video src="tansik.mp4" width="340" controls="controls" poster="01_home_light.png">
+    Your browser does not support the video tag.
+  </video>
+</p>
+
+<p align="center">
+  <a href="tansik.mp4">
+    <img src="https://img.shields.io/badge/▶%20Watch%20Demo%20Video-tansik.mp4-02569B?style=for-the-badge&logo=googleplay&logoColor=white" alt="Play Demo Video" />
+  </a>
+  <br />
+  <em>🎥 <a href="tansik.mp4">Click here to watch or download the application demo video</a></em>
+</p>
 
 ---
 
