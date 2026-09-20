@@ -141,17 +141,17 @@ Data is fetched from `https://tansik.digital.gov.eg`:
 ## 🎬 Demo Video
 
 <p align="center">
-  <video src="tansik.mp4" width="340" controls="controls" poster="01_home_light.png">
+  <video src="https://youtu.be/qLnDGFDpvwE" width="340" controls="controls" poster="01_home_light.png">
     Your browser does not support the video tag.
   </video>
 </p>
 
 <p align="center">
-  <a href="tansik.mp4">
+  <a href="https://youtu.be/qLnDGFDpvwE">
     <img src="https://img.shields.io/badge/▶%20Watch%20Demo%20Video-tansik.mp4-02569B?style=for-the-badge&logo=googleplay&logoColor=white" alt="Play Demo Video" />
   </a>
   <br />
-  <em>🎥 <a href="tansik.mp4">Click here to watch or download the application demo video</a></em>
+  <em>🎥 <a href="https://youtu.be/qLnDGFDpvwE">Click here to watch or download the application demo video</a></em>
 </p>
 
 ---
